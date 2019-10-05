@@ -1,5 +1,6 @@
 package sgit
 
+import java.io.File
 import org.scalatest._
 
 class SgitTest extends FunSpec with FlatSpec with Matchers {
@@ -7,5 +8,4 @@ class SgitTest extends FunSpec with FlatSpec with Matchers {
     new File(".sgit")
     assert(new File(".sgit").exists())
   }
-}
 }
