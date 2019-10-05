@@ -5,7 +5,8 @@ import org.scalatest._
 
 class SgitTest extends FlatSpec with Matchers {
   "Directory" should "be create" in {
-    new File(".sgit")
+    val a = new File(".sgit")
+    println(a)
     assert(new File(".sgit").exists())
   }
 }
