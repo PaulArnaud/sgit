@@ -5,6 +5,9 @@ import better.files.File._
 import java.io.{File => JavaFile}
 import java.io.BufferedWriter
 import java.io.FileWriter
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import org.apache.commons.codec.digest.DigestUtils
 
 object FileTools {
     
@@ -17,15 +20,11 @@ object FileTools {
             .toFile
             .createIfNotExists(true)
 
-        val commits: File = ".sgit/commits"
+        val refs: File = ".sgit/refs"
             .toFile
             .createIfNotExists(true)
 
-        val trees: File = ".sgit/trees"
-            .toFile
-            .createIfNotExists(true)
-
-        val blobs: File = ".sgit/blobs"
+        val objects: File = ".sgit/objects"
             .toFile
             .createIfNotExists(true)
 
@@ -43,6 +42,13 @@ object FileTools {
     }
 
     def createBlop(file :JavaFile) : Unit = {
+        val src = file.getName()
+        val dest = DigestUtils.sha1Hex(file.getName())
+        var inputChannel = new FileInputStream(src).getChannel();
+        var outputChannel = new FileOutputStream(dest).getChannel();
+        outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+        inputChannel.close();
+        outputChannel.close();
         // Content of a file
         /*
         creation du sha1 avec le nom du fichier

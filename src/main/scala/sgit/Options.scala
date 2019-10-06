@@ -38,7 +38,7 @@ object Options {
     }
 
     def add(files: Seq[File]) : Unit = {
-        files.map(x => FileTools.addToStage(x))
+        files.map(x => FileTools.createBlop(x))
     }
 
     def commit() : Unit = {
