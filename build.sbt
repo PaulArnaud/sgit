@@ -8,7 +8,8 @@ lazy val root = (project in file("."))
   .settings(
     name := "sgit",
     libraryDependencies += scalaTest % Test,
-    libraryDependencies += "com.github.scopt" %% "scopt" % "4.0.0-RC2"
+    libraryDependencies += "com.github.scopt" %% "scopt" % "4.0.0-RC2",
+    libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.8.0"
   )
 
 import sbtassembly.AssemblyPlugin.defaultUniversalScript
