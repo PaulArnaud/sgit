@@ -2,6 +2,9 @@ package sgit
 
 import better.files._
 import better.files.File._
+import java.io.{File => JavaFile}
+import java.io.BufferedWriter
+import java.io.FileWriter
 
 object FileTools {
     
@@ -37,5 +40,24 @@ object FileTools {
         val STAGE: File = ".sgit/STAGE"
             .toFile
             .createIfNotExists()
+    }
+
+    def createBlop() : Unit = {
+
+    }
+
+    def createTree() : Unit = {
+
+    }
+
+    def createCommit() : Unit = {
+
+    }
+
+    def addToStage(file: JavaFile) : Unit = {
+        val STAGE = new JavaFile(".sgit/STAGE")
+        val fw = new FileWriter(STAGE,true)
+        fw.write(file.getAbsolutePath() + "\n")
+        fw.close()
     }
 }

@@ -1,6 +1,7 @@
 package sgit
 
 import sgit.FileTools
+import java.io.File
 
 object Options {
 
@@ -16,8 +17,8 @@ object Options {
 
     }
 
-    def add() : Unit = {
-
+    def add(files: Seq[File]) : Unit = {
+        files.map(x => FileTools.addToStage(x))
     }
 
     def commit() : Unit = {
@@ -45,6 +46,6 @@ object Options {
     }
 
     def rebase() : Unit = {
-        
+
     }
 }

@@ -89,6 +89,9 @@ object Sgit {
                 case "init" => {
                     Options.init()
                 }
+                case "add" => {
+                    Options.add(config.files)
+                }
                 case _ => {
                     println("Hi")
                 }
