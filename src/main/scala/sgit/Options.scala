@@ -18,15 +18,12 @@ object Options {
 
     }
 
-    def add(files: Seq[File]) : Unit = {
-        val repository = findRepo()
-        if (repository.isDefined) {
-            val repositoryDirectory = repository.get
-            files.foreach( x => FileTools.addToStage(FileTools.createBlop(x,repositoryDirectory),repositoryDirectory))
-        }
-        else {
-            noRepoFindMsg()
-        }
+    def add(files: Seq[File], repository: File) : Unit = {
+        val (tracked, untracked) = files.partition( f => FileTools.isInStage(f, repository) )
+        untracked.foreach( f => FileTools.addToStage(FileTools.createBlop(f, repository), repository) )
+        val (modified, unmodified) = tracked.partition( f => FileTools.wasModified(f, repository))
+        modified.foreach( f => println(f.getName()))
+        modified.foreach( f => FileTools.updateStage(f, repository))
     }
 
     def commit() : Unit = {
@@ -55,13 +52,5 @@ object Options {
 
     def rebase() : Unit = {
 
-    }
-
-    def findRepo() : Option[File] = {
-        return FileTools.findNearestRepo(new File(".").getCanonicalFile())
-    }
-
-    def noRepoFindMsg() : Unit = {
-        println("No repository found. Please try to initialize one \n--> sgit init")
     }
 }

@@ -1,15 +1,17 @@
 package sgit 
 
 import sgit.Options
+import sgit.FileTools
+
 import scopt.OParser
-import java.io.File
+import java.io.{File => JavaFile}
 
 object Sgit {
     def main(args: Array[String]): Unit = {
 
     case class Config(
         command: String = "", 
-        files: Seq[File] = Seq(), 
+        files: Seq[JavaFile] = Seq(), 
         p: Boolean = false,
         stats: Boolean = false,
         branch_tag_commit: String = "",
@@ -34,7 +36,7 @@ object Sgit {
                 .text("Add file contents to the index")
                 .action((_, c) => c.copy(command = "add"))
                 .children(
-                    arg[File]("<file>...")
+                    arg[JavaFile]("<file>...")
                     .unbounded()
                     .required()
                     .action((x, c) => c.copy(files = c.files :+ x))
@@ -90,19 +92,24 @@ object Sgit {
                 case "init" => {
                     Options.init()
                 }
-                case "add" => {
-                    Options.add(config.files)
-                }
-                case "diff" => {
-                    Options.findRepo()
-                }
                 case _ => {
-                    println("Hi")
+                    FileTools.findRepo() match {
+                        case Some(value) => {
+                            val repository = new JavaFile(value.getAbsolutePath())
+                            config.command match {
+                                case "add" => {
+                                    Options.add(config.files,repository)
+                                }
+                            }
+                        }
+                        case None => {
+                            println("No repository found. Please try to initialize one \n--> sgit init")
+                        }
+                    }   
                 }
             }
         }
-        // do something
-        case _ => println("arguments are bad \n Please reaad the help (help option)")
+        case _ => println("Error : no valids arguments, please read the help \n-> sgit --help")
     }
 
     }
