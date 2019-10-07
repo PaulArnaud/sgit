@@ -35,7 +35,8 @@ object Sgit {
                 .action((_, c) => c.copy(command = "add"))
                 .children(
                     arg[File]("<file>...")
-                    .unbounded().optional()
+                    .unbounded()
+                    .required()
                     .action((x, c) => c.copy(files = c.files :+ x))
                     .text("files to add")),
             // Diff option
@@ -91,6 +92,9 @@ object Sgit {
                 }
                 case "add" => {
                     Options.add(config.files)
+                }
+                case "diff" => {
+                    Options.findRepo()
                 }
                 case _ => {
                     println("Hi")

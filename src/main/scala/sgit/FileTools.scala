@@ -2,11 +2,8 @@ package sgit
 
 import better.files._
 import better.files.File._
-import java.io.{File => JavaFile}
-import java.io.BufferedWriter
-import java.io.FileWriter
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import java.io.{File => JavaFile, BufferedWriter, FileInputStream, FileOutputStream, FileWriter}
+import scala.io.Source
 import org.apache.commons.codec.digest.DigestUtils
 
 object FileTools {
@@ -41,20 +38,16 @@ object FileTools {
             .createIfNotExists()
     }
 
-    def createBlop(file :JavaFile) : Unit = {
-        val src = file.getName()
-        val dest = DigestUtils.sha1Hex(file.getName())
+    def createBlop(file :JavaFile, repository: JavaFile) : String = {
+        val fileContent = scala.io.Source.fromFile(file.getAbsolutePath()).mkString
+        val src = file.getAbsoluteFile()
+        val dest = repository.getAbsolutePath() + "/objects/" + DigestUtils.sha1Hex(fileContent)
         var inputChannel = new FileInputStream(src).getChannel();
         var outputChannel = new FileOutputStream(dest).getChannel();
         outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
         inputChannel.close();
         outputChannel.close();
-        // Content of a file
-        /*
-        creation du sha1 avec le nom du fichier
-        creation d'un fichier de nom (clé en sha1) et de contenu lefichier d'entrée
-        */
-
+        return "blop " + dest + " " +file.getAbsolutePath()
     }
 
     def createTree() : Unit = {
@@ -78,50 +71,41 @@ object FileTools {
         */
     }
 
-    def addToStage(file: JavaFile) : Unit = {
-        val STAGE = new JavaFile(".sgit/STAGE")
+    def addToStage(line: String, repository: JavaFile) : Unit = {
+        val STAGE = new JavaFile(repository.getAbsolutePath()+"/STAGE")
         val fw = new FileWriter(STAGE,true)
-        fw.write(file.getAbsolutePath() + "\n")
+        fw.write(line)
         fw.close()
     }
     
-    def findHome() : JavaFile = {
-        return new JavaFile("")
-    }
-
-    def hasFindRepo() : Boolean = {
-        return true
+    def findNearestRepo(file: JavaFile) : Option[JavaFile] = {
+        if (file.isDirectory) {
+            val sibblings = file.listFiles()
+            val sgit = sibblings.find(x => x.getName()==".sgit")
+            if (sgit.isDefined){
+                sgit 
+            }
+            else {
+                findNearestRepo(file.getParentFile())
+            } 
+        }
+        else {
+            if (file.getName() == ".sgit"){
+                Some(file)
+            }
+            else {
+                if (file.getParentFile() == null) {
+                    None
+                }
+                else {
+                    findNearestRepo(file.getParentFile())
+                }
+            }
+        }
     }
 
     def recursiveListFiles(f: JavaFile): Array[JavaFile] = {
         val these = f.listFiles
         these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
-    }
-
-    def isTracked(f: JavaFile) : Boolean = {
-        return true
-    }
-
-    def isModified(f: JavaFile) : Boolean = {
-        val blop = findTheCorrespondingBlop()
-        val hasBeenModified = false
-
-        /* if (blop.length == f.length) {
-            for i in 0, blop.length {
-                if (blop[i] != f[i]) {
-                    hasBeenModified = true
-                }
-            }
-        }
-        else {
-            hasBeenModified = true
-        }
-
-        */
-        return true
-    }
-
-    def findTheCorrespondingBlop() : JavaFile = {
-        return new JavaFile("")
     }
 }
