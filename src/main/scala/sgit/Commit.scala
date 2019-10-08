@@ -1,0 +1,5 @@
+package sgit
+
+object Commit {
+    
+}

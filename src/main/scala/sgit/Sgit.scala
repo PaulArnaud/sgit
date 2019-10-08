@@ -11,7 +11,7 @@ object Sgit {
 
     case class Config(
         command: String = "", 
-        files: Seq[JavaFile] = Seq(), 
+        files: Seq[String] = Seq(), 
         p: Boolean = false,
         stats: Boolean = false,
         branch_tag_commit: String = "",
@@ -36,7 +36,7 @@ object Sgit {
                 .text("Add file contents to the index")
                 .action((_, c) => c.copy(command = "add"))
                 .children(
-                    arg[JavaFile]("<file>...")
+                    arg[String]("<file>...")
                     .unbounded()
                     .required()
                     .action((x, c) => c.copy(files = c.files :+ x))
@@ -98,7 +98,10 @@ object Sgit {
                             val repository = new JavaFile(value.getAbsolutePath())
                             config.command match {
                                 case "add" => {
-                                    Options.add(config.files,repository)
+                                    Options.add(config.files, repository)
+                                }
+                                case "status" => {
+                                    Options.status(repository)
                                 }
                             }
                         }
