@@ -1,8 +1,5 @@
 package sgit 
 
-import sgit.Options
-import sgit.FileTools
-
 import scopt.OParser
 import java.io.{File => JavaFile}
 import java.rmi.activation.ActivationGroupDesc.CommandEnvironment

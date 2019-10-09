@@ -1,5 +1,5 @@
 package sgit
 
-object Tree {
+class Tree {
     
 }
