@@ -1,5 +1,12 @@
 package sgit 
 
-object Stage {
+import java.io.File
+
+class Stage (root: File) {
+
+    def getStatus : String = {
+        val stageContent = FileTools.readFile(root + "/STAGE")
+        return stageContent
+    }
     
 }

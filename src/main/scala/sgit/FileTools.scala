@@ -9,35 +9,48 @@ import org.apache.commons.codec.digest.DigestUtils
 object FileTools {
     
     def createRepo() : Unit = {
-        val sgit: File = ".sgit"
-            .toFile
-            .createIfNotExists(true)
-
-        val tags: File = ".sgit/tags"
-            .toFile
-            .createIfNotExists(true)
-
-        val refs: File = ".sgit/refs"
-            .toFile
-            .createIfNotExists(true)
-
-        val objects: File = ".sgit/objects"
-            .toFile
-            .createIfNotExists(true)
-
-        val branches: File = ".sgit/branches"
-            .toFile
-            .createIfNotExists(true)
-
-        val HEAD: File = ".sgit/HEAD"
-            .toFile
-            .createIfNotExists()
-        
-        val STAGE: File = ".sgit/STAGE"
-            .toFile
-            .createIfNotExists()
+        createFileOrDirectory(".sgit", true)
+        createFileOrDirectory(".sgit/tags", true)
+        createFileOrDirectory(".sgit/refs", true)
+        createFileOrDirectory(".sgit/branches", true)
+        createFileOrDirectory(".sgit/objects", true)
+        createFileOrDirectory(".sgit/STAGE", false)
+        createFileOrDirectory(".sgit/HEAD", false)
     }
 
+    def createFileOrDirectory(name: String, isDirectory: Boolean) : Unit = {
+        val file : File = name
+            .toFile
+            .createIfNotExists(isDirectory)
+    }
+
+    def writeFile(nameFile: String, content: String): Unit = {
+        val file = File(nameFile).overwrite(content)
+    }
+
+    def readFile(nameFile: String): String = {
+        scala.io.Source.fromFile(nameFile).mkString
+    }
+
+    def fileExploration(directory: JavaFile, research: String) : Option[JavaFile] = {
+        val root = directory.listFiles().find( f => f.getName() == research )
+        if (root.isDefined) {
+            root
+        }
+        else {
+            if (directory.getParentFile() == null) {
+                None
+            }
+            else {
+                fileExploration(directory.getParentFile(), research)
+            }
+        }
+    }
+
+
+    ///////
+
+    
     def createBlop(file :JavaFile, repository: JavaFile) : String = {
         val src = file.getCanonicalFile()
         val dest = repository.getCanonicalPath() + "/objects/" + getSHA1(file)
@@ -49,23 +62,6 @@ object FileTools {
         return "blop " + dest + " " + file.getCanonicalPath() + "\n"
     }
 
-    def createTree() : Unit = {
-        // one or several reference to blop OR one or several tree
-        /*  
-        De la forme : TYPE SHA1 nomFICHIER ||  Exemple : blob cf59e02c3d2a2413e2da9e535d3c116af1077906 README.md
-        */
-    }
-
-    def createCommit() : Unit = {
-        // one or many tree, one or many parent (commit) 
-        /*  
-        De la forme : 
-        tree f89e64bdfcc08a8b371ee76a74775cfe096655ce
-        author zspajich <zspajich@gmail.com> 1516710703 +0100
-        committer zspajich <zspajich@gmail.com> 1516710703 +0100Initial Commit
-        */
-    }
-
     def addToStage(line: String, repository: JavaFile) : Unit = {
         val STAGE = new JavaFile(repository.getCanonicalPath()+"/STAGE")
         val fw = new FileWriter(STAGE,true)
@@ -73,36 +69,6 @@ object FileTools {
         fw.close()
     }
     
-    def findRepo() : Option[JavaFile] = {
-        return findNearestRepo(new JavaFile(".").getCanonicalFile())
-    }
-
-    def findNearestRepo(file: JavaFile) : Option[JavaFile] = {
-        if (file.isDirectory) {
-            val sibblings = file.listFiles()
-            val sgit = sibblings.find(x => x.getName()==".sgit")
-            if (sgit.isDefined){
-                sgit 
-            }
-            else {
-                findNearestRepo(file.getParentFile())
-            } 
-        }
-        else {
-            if (file.getName() == ".sgit"){
-                Some(file)
-            }
-            else {
-                if (file.getParentFile() == null) {
-                    None
-                }
-                else {
-                    findNearestRepo(file.getParentFile())
-                }
-            }
-        }
-    }
-
     def recursiveListFiles(f: JavaFile): Seq[JavaFile] = {
         val these = f.listFiles
         these ++ these.filter( f => f.isDirectory).flatMap( d => recursiveListFiles(d))
@@ -193,4 +159,5 @@ object FileTools {
         new FileWriter(repository.getCanonicalPath() + "/STAGE", false).close()
         addToStage(contentCopy,repository)
     }
+
 }

@@ -2,10 +2,10 @@ package sgit
 
 import java.io.File
 
-object Blop {
+class Blop (filePath: String, rootPath: String, sha1: String) {
 
-    def create(file: File) : (String, String, String) = {
-        ("blop", "sha1", "path")
+    def getContent : String = {
+        FileTools.readFile(rootPath + ".sgit/objects/" + sha1)
     }
     
 }

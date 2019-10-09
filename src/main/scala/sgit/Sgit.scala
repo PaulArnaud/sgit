@@ -5,6 +5,7 @@ import sgit.FileTools
 
 import scopt.OParser
 import java.io.{File => JavaFile}
+import java.rmi.activation.ActivationGroupDesc.CommandEnvironment
 
 object Sgit {
     def main(args: Array[String]): Unit = {
@@ -90,18 +91,16 @@ object Sgit {
         case Some(config) => {
             config.command match {
                 case "init" => {
-                    Options.init()
+                    Command.init()
                 }
                 case _ => {
-                    FileTools.findRepo() match {
-                        case Some(value) => {
-                            val repository = new JavaFile(value.getAbsolutePath())
+                    Repository.getRoot match {
+                        case Some(root) => {
                             config.command match {
                                 case "add" => {
-                                    Options.add(config.files, repository)
+                                    Command.add(root, config.files)
                                 }
                                 case "status" => {
-                                    Options.status(repository)
                                 }
                             }
                         }
