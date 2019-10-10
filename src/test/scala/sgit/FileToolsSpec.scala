@@ -1,6 +1,5 @@
 package sgit 
 
-import sgit.FileTools
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 import java.io.{File => JavaFile}
