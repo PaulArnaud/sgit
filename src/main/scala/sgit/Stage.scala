@@ -2,19 +2,12 @@ package sgit
 
 import java.io.File
 
-class Stage (root: File) {
-
-    var blops : Array[Blop] = null
-
-    def getStatus : String = {
-        val stageContent = FileTools.readFile(root + "/STAGE")
-        this.blops = stageContent
-            .split("\n")
-            .map( line => new Blop(line.split(" ")(0), root.getCanonicalPath(), line.split(" ")(1)))
-        return stageContent
-    }
+object Stage{
     
-    def buildTrees : Tree = {
-        return new Tree
+    def update( modifiedAndUnmodifiedFiles: (Array[File], Array[File]), newFiles: Array[File]): Unit ={
+        var stageContent : String = ""
+        modifiedAndUnmodifiedFiles._1.foreach( f => stageContent + f.getName )
+        (modifiedAndUnmodifiedFiles._2 ++ newFiles).foreach( f => stageContent + f.getName )
+        println(stageContent)
     }
 }

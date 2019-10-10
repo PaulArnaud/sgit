@@ -8,17 +8,21 @@ object Command {
         FileTools.createRepo()
     }
 
-    def status(root: File) : Unit = {
-        val stage = new Stage(root)
-        val status = stage.getStatus
-        println("Content of stage : " + status)
+    def status(root: File, wd: WorkingDirectory) : Unit = {
+        MessagePrinter.printFiles(Console.RED, "Deleted Files", wd.getDeletedFiles)
+        MessagePrinter.printFiles(Console.YELLOW, "Untracked Files", wd.getUntrackedFiles)
+        MessagePrinter.printFiles(Console.BLUE, "Modified Files", wd.getModifiedAndUnmodifiedFiles._2)
     }
 
     def diff() : Unit = {
 
     }
 
-    def add(root: File, files: Seq[String]) : Unit = {
+    def add(root: File, strings: Array[String], wd: WorkingDirectory) : Unit = {
+        val files = strings.map( s => new File(s))
+        val (inDirectory, outDirectory) = wd.contains(files)
+        MessagePrinter.printFiles(Console.MAGENTA, "fatal : out of repository", outDirectory)
+        Stage.update(wd.getModifiedAndUnmodifiedFiles, inDirectory)
     }
 
     def commit() : Unit = {

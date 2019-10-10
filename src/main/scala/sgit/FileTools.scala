@@ -47,6 +47,24 @@ object FileTools {
         }
     }
 
+    def listFilesInDirectory(root: JavaFile): Array[JavaFile] = {
+        val (directory, files) = root.listFiles.partition( e => e.isDirectory() )
+        return files ++ directory.filter( c => c.getName() != ".sgit").flatMap( d => listFilesInDirectory(d))
+    }
+
+    def filesFromStage(root: JavaFile) : Array[JavaFile] = {
+        val rootPath = root.getAbsolutePath 
+        val stageContent = FileTools.readFile(rootPath+"/.sgit/STAGE")
+        return stageContent.split("\n").map( s => new JavaFile(rootPath + s.split(" ")(1)))
+    }
+
+    def sha1FromStage(root: JavaFile, file: JavaFile) : String = {
+        val rootPath = root.getAbsolutePath 
+        val stageContent = FileTools.readFile(root.getCanonicalPath() +"/.sgit/STAGE")
+        val line = stageContent.split("\n").find( s => new JavaFile(rootPath + s.split(" ")(1)) == file)
+        line.get.split(" ")(0)
+    }
+
 
     ///////
 

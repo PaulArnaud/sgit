@@ -9,7 +9,7 @@ object Sgit {
 
     case class Config(
         command: String = "", 
-        files: Seq[String] = Seq(), 
+        files: Array[String] = Array(), 
         p: Boolean = false,
         stats: Boolean = false,
         branch_tag_commit: String = "",
@@ -93,11 +93,14 @@ object Sgit {
                 case _ => {
                     Repository.getRoot match {
                         case Some(root) => {
+                            val rootDirectory = root.getParentFile()
+                            val wd = new WorkingDirectory(rootDirectory)
                             config.command match {
                                 case "add" => {
-                                    Command.add(root, config.files)
+                                    Command.add(rootDirectory, config.files, wd)
                                 }
                                 case "status" => {
+                                    Command.status(rootDirectory, wd)
                                 }
                             }
                         }
