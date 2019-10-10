@@ -13,3 +13,4 @@ env:
 script:
     - sbt coverage test coverageReport
     - sonar-scanner -D sonar.host.url=$SONAR_HOST_URL -D sonar.login=$SONAR_TOKEN -X
+    - sbt scalafmtCheckAll
