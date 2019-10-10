@@ -5,6 +5,9 @@ jdk: openjdk8
 scala:
    - 2.13.0
 
+addons:
+  sonarcloud: true
+
 env:
   global:
   - SONAR_HOST_URL=http://185.216.27.102:9000
