@@ -22,11 +22,11 @@ object FileTools {
     }
 
     def writeFile(nameFile: String, content: String): Unit = {
-        File(nameFile).overwrite(content)
+        nameFile.toFile.overwrite(content)
     }
 
     def readFile(nameFile: String): String = {
-       File(nameFile).contentAsString
+       nameFile.toFile.contentAsString
     }
 
     def fileExploration(directory: JavaFile, research: String) : Option[JavaFile] = {
@@ -65,6 +65,28 @@ object FileTools {
     def getSHA1(file: JavaFile) : String = {
         val fileContent = scala.io.Source.fromFile(file.getCanonicalPath()).mkString
         return DigestUtils.sha1Hex(fileContent)
+    }
+
+    def findCommit(root: JavaFile, name: String) : Option[JavaFile] = {
+        val rootPath = root.getCanonicalPath
+        if ((rootPath + "/.sgit/objects/" + name).toFile.exists) {
+            Some(new JavaFile(rootPath + "/.sgit/objects/" + name))
+        }
+        else if ((rootPath + "/.sgit/branch/" + name).toFile.exists) {
+            val commitName = readFile(rootPath + "/.sgit/branch/" + name)
+            Some(new JavaFile(rootPath + "/.sgit/objects/" + commitName))
+        }
+        else if ((rootPath + "/.sgit/tag/" + name).toFile.exists) {
+            val commitName = readFile(rootPath + "/.sgit/tag/" + name)
+            Some(new JavaFile(rootPath + "/.sgit/objects/" + commitName))
+        } 
+        else {
+            None
+        }
+    }
+
+    def checkoutCommit(root: JavaFile, commit: JavaFile): Unit = {
+        
     }
 
 }
