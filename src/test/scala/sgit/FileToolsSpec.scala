@@ -48,9 +48,10 @@ class FileToolsTest extends FunSuite {
         val stage = new JavaFile(".sgit/STAGE")
         val head = new JavaFile(".sgit/HEAD")
         val tags = new JavaFile(".sgit/tags")
-        val refs = new JavaFile(".sgit/refs")
+        val refs = new JavaFile(".sgit/REF")
+        val logs = new JavaFile(".sgit/LOGS")
         val objects = new JavaFile(".sgit/objects")
-        val branches = new JavaFile(".sgit/branches")
+        val branches = new JavaFile(".sgit/branchs")
     
         sgit should exist
         stage should exist
@@ -59,6 +60,8 @@ class FileToolsTest extends FunSuite {
         refs should exist
         objects should exist
         branches should exist   
+        logs should exist
+        
         sgit.delete()
     }
 

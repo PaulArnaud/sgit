@@ -3,6 +3,7 @@ package sgit
 import java.io.File
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
+import java.time.Instant
 
 object Command {
     
@@ -50,8 +51,12 @@ object Command {
         val stageContent = FileTools.readFile(rootPath + "/.sgit/STAGE")
         val sha1stage = DigestUtils.sha1Hex(stageContent)
         val fileName = rootPath + "/.sgit/objects/" + sha1stage
+        val lastCommit = FileTools.readFile(rootPath+"/.sgit/REF")
+        
         FileTools.createFileOrDirectory(fileName, false)
-        FileTools.writeFile(fileName, commitName + "\n" + stageContent)
+        FileTools.writeFile(fileName, commitName + " " + lastCommit + "\n" + stageContent)
+        FileTools.writeFile(rootPath+"/.sgit/REF", sha1stage)
+        FileTools.addLineInFile(rootPath+"/.sgit/LOGS", commitName + " " + sha1stage + " " + Instant.now().toString())
         /*
         Update des branches
         Liaison avec le commit précédent
@@ -59,8 +64,9 @@ object Command {
 
     }
 
-    def log() : Unit = {
-
+    def log(root: File) : Unit = {
+        val logs = FileTools.readFile(root.getCanonicalPath() + "/.sgit/LOGS")
+        println(logs)
     }
 
     def newBranch(root: File, branchName: String) : Unit = {
@@ -101,6 +107,11 @@ object Command {
 
     def rebase() : Unit = {
 
+    }
+
+    def listTagsAndBranch(root: File) : Unit = {
+        MessagePrinter.printNameFile(Console.WHITE, "Tags", FileTools.listTags(root))
+        MessagePrinter.printNameFile(Console.BLUE, "Branchs", FileTools.listBranchs(root))
     }
 
 }

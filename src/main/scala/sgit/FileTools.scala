@@ -10,11 +10,15 @@ object FileTools {
     def createRepo() : Unit = {
         createFileOrDirectory(".sgit", true)
         createFileOrDirectory(".sgit/tags", true)
-        createFileOrDirectory(".sgit/refs", true)
-        createFileOrDirectory(".sgit/branches", true)
+        createFileOrDirectory(".sgit/branchs", true)
         createFileOrDirectory(".sgit/objects", true)
         createFileOrDirectory(".sgit/STAGE", false)
         createFileOrDirectory(".sgit/HEAD", false)
+        createFileOrDirectory(".sgit/LOGS", false)
+        createFileOrDirectory(".sgit/REF", false)
+        writeFile(".sgit/HEAD", "master")
+        createFileOrDirectory(".sgit/branchs/master", false)
+        writeFile(".sgit/branchs/master", "INITIAL COMMIT")
     }
 
     def createFileOrDirectory(name: String, isDirectory: Boolean) : Unit = {
@@ -23,6 +27,10 @@ object FileTools {
 
     def writeFile(nameFile: String, content: String): Unit = {
         nameFile.toFile.overwrite(content)
+    }
+
+    def addLineInFile(nameFile: String, newLine: String): Unit = {
+        nameFile.toFile.appendLines(newLine)
     }
 
     def readFile(nameFile: String): String = {
@@ -86,7 +94,27 @@ object FileTools {
     }
 
     def checkoutCommit(root: JavaFile, commit: JavaFile): Unit = {
-        
+        val rootPath = root.getCanonicalPath()
+        val commitContent = readFile(commit.getCanonicalPath())
+        val files = commitContent
+            .split("\n")
+            .tail
+            .foreach( l => {
+                val linesplit = l.split(" ")
+                val fileContent = readFile(rootPath + "/.sgit/objects" + linesplit(0))
+                val fileName = rootPath + linesplit(1)
+                createFileOrDirectory(fileName, false)
+                writeFile(fileName, fileContent)
+            })
     }
 
+    def listBranchs(root: JavaFile) : Array[JavaFile] = {
+        val rootPath = root.getCanonicalPath() 
+        new JavaFile(rootPath + "/.sgit/branchs").listFiles()
+    }
+
+    def listTags(root: JavaFile) : Array[JavaFile] = {
+        val rootPath = root.getCanonicalPath() 
+        new JavaFile(rootPath + "/.sgit/tags").listFiles()
+    }
 }
