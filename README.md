@@ -3,7 +3,7 @@
 ***Copy of GIT with Scala language***  
 Date : _5 -> 20 October 2019_  
 by **Paul ARNAUD**  
-## Instructions  
+# Instructions  
 
 The instructions for compiling and testing the project are as follows:
 
