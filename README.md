@@ -1,13 +1,13 @@
 # sgit
 
-***Copy of GIT with Scala language***.
-Date : _5 -> 20 October 2019_.
-by **Paul ARNAUD**.
+***Copy of GIT with Scala language***  
+Date : _5 -> 20 October 2019_  
+by **Paul ARNAUD**  
 
-## Instructions
+## Instructions  
 The instructions for compiling and testing the project are as follows:
 
-* clone this github repository
+* clone this github repository  
 This requires that you have installed version 1.3.2 of sbt and 2.13.0 of scala
 * launch the command 'sbt assembly'
 
@@ -35,4 +35,4 @@ Test classes was late.... middle of the project
 sbt test
 funsuite
   * How to make complex analyses about test
-sonarQube
+sonarQube  
