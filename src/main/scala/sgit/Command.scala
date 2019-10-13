@@ -4,6 +4,7 @@ import java.io.File
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import java.time.Instant
+import java.nio.file.Files
 
 object Command {
     
@@ -22,6 +23,7 @@ object Command {
     }
 
     def add(root: File, strings: Array[String], wd: WorkingDirectory) : Unit = {
+
         /*
         pour chaque fichier : on regarde 
 
@@ -52,16 +54,20 @@ object Command {
         val sha1stage = DigestUtils.sha1Hex(stageContent)
         val fileName = rootPath + "/.sgit/objects/" + sha1stage
         val lastCommit = FileTools.readFile(rootPath+"/.sgit/REF")
-        
-        FileTools.createFileOrDirectory(fileName, false)
-        FileTools.writeFile(fileName, commitName + " " + lastCommit + "\n" + stageContent)
-        FileTools.writeFile(rootPath+"/.sgit/REF", sha1stage)
-        FileTools.addLineInFile(rootPath+"/.sgit/LOGS", commitName + " " + sha1stage + " " + Instant.now().toString())
-        /*
-        Update des branches
-        Liaison avec le commit précédent
-        */
+        val commitFirstLine = sha1stage + " " commitName + " " + Instant.now().toString() +" "+ lastCommit + "\n"
+        /* Création du commit : la première ligne est composée du nom du commit , de la date 
+        et du commit précédent */
 
+        FileTools.createFileOrDirectory(fileName, false)
+        FileTools.writeFile(fileName, commitFirstLine + stageContent)
+
+        /* Mise à jour de la référence de la branche qui pointait sur le dernier commit, du dernier commit
+        qui devient celui-ci et rajout de la ligne dans les logs */
+
+        FileTools.writeFile(rootPath+"/.sgit/REF", sha1stage)
+        FileTools.addLineInFile(rootPath+"/.sgit/LOGS", commitFirstLine )
+        val actualBranch = FileTools.readFile(rootPath+"/.sgit/HEAD")
+        FileTools.writeFile(rootPath+"/.sgit/branch/"+ actualBranch, sha1stage)
     }
 
     def log(root: File) : Unit = {
@@ -83,11 +89,13 @@ object Command {
         /*
         rebuild th working directory 
         */
+        val rootPath = root.getCanonicalPath()
         val commit = FileTools.findCommit(root, name)
         commit match {
             case Some(commit) => {
                 FileUtils.cleanDirectory(root); 
-                FileTools.checkoutCommit(root, commit)
+                FileTools.checkoutFromCommit(root, commit)
+                FileTools.writeFile(rootPath+"/.sgit/REF", commit.getName())
             }
             case None => println(Console.RED + "No tag/branch/commit with this name : " + name )
         }

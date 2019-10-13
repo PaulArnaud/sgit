@@ -93,7 +93,7 @@ object FileTools {
         }
     }
 
-    def checkoutCommit(root: JavaFile, commit: JavaFile): Unit = {
+    def checkoutFromCommit(root: JavaFile, commit: JavaFile): Unit = {
         val rootPath = root.getCanonicalPath()
         val commitContent = readFile(commit.getCanonicalPath())
         val files = commitContent
