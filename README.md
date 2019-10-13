@@ -1,9 +1,8 @@
 # sgit
 
-Copy of GIT with Scala language
-
+***Copy of GIT with Scala language***
+Date : _5 -> 20 October 2019_
 by **Paul ARNAUD**
-_5 -> 20 October 2019_
 
 ## Instructions
 The instructions for compiling and testing the project are as follows:
