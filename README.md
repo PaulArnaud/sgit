@@ -1,9 +1,15 @@
 # sgit
-Copy of GIT in Scala
+
+Copy of GIT with Scala language
+
+by **Paul ARNAUD**
+_5 -> 20 October 2019_
+
 ## Instructions
 The instructions for compiling and testing the project are as follows:
 
 * clone this github repository
+This requires that you have installed version 1.3.2 of sbt and 2.13.0 of scala
 * launch the command 'sbt assembly'
 
 You will then find an executable file in "/target/scala-2.13/" which has the name sgit.
@@ -14,11 +20,20 @@ In this section, you should
 explain what is the architecture of your application and your conception choices.
 explicitly have two subsections talking about the pros and the cons of your architecture
 add at least one figure to describe your application
-Explain your test strategy and show one or two idiomatic examples
 
-Post Mortem
-A project post-mortem is a process, usually performed at the conclusion of a project, to determine and analyze elements of the project that were successful or unsuccessful.
-What went right
-What went wrong
-Lessons learned
-// In this subsection at least try to answer this question: What will you do to not reproduce the same mistakes?
+## Test strategy
+I have tried to test each function
+
+## Post Mortem
+
+* What went right
+Nothing ?
+* What went wrong
+Test classes was late.... middle of the project
+* Lessons learned
+  * How to build a complex project with many libraries
+  * How to set up test
+sbt test
+funsuite
+  * How to make complex analyses about test
+sonarQube
