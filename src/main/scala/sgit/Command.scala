@@ -51,10 +51,10 @@ object Command {
     def commit(root: File, wd: WorkingDirectory, commitName : String) : Unit = {
         val rootPath = root.getCanonicalPath()
         val stageContent = FileTools.readFile(rootPath + "/.sgit/STAGE")
-        val sha1stage = DigestUtils.sha1Hex(stageContent)
+        val sha1stage = DigestUtils.sha1Hex(stageContent).toString
         val fileName = rootPath + "/.sgit/objects/" + sha1stage
         val lastCommit = FileTools.readFile(rootPath+"/.sgit/REF")
-        val commitFirstLine = sha1stage + " " commitName + " " + Instant.now().toString() +" "+ lastCommit + "\n"
+        val commitFirstLine = sha1stage + " " + commitName + " " + Instant.now().toString() +" "+ lastCommit + "\n"
         /* Création du commit : la première ligne est composée du nom du commit , de la date 
         et du commit précédent */
 
