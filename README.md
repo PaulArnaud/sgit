@@ -5,7 +5,6 @@ Date : _5 -> 20 October 2019_
 by **Paul ARNAUD**.
 
 ## Instructions  
-
 The instructions for compiling and testing the project are as follows:
 
 * clone this github repository  
@@ -38,4 +37,4 @@ Test classes was late.... middle of the project
 sbt test
 funsuite
   * How to make complex analyses about test
-sonarQube 
+sonarQube  
