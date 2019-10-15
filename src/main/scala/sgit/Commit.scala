@@ -1,5 +1,0 @@
-package sgit
-
-object Commit {
-    
-}

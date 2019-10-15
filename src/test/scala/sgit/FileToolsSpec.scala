@@ -42,7 +42,7 @@ class FileToolsTest extends FunSuite {
     }
 
     test("createRepo should create a repository directory") {
-        FileTools.createRepo()
+        FileTools.createRepo
 
         val sgit = new JavaFile(".sgit")
         val stage = new JavaFile(".sgit/STAGE")
@@ -66,12 +66,12 @@ class FileToolsTest extends FunSuite {
     }
 
     test("createRepo should not modify an existing repository directory"){
-        FileTools.createRepo()
+        FileTools.createRepo
         val sgit = File(".sgit")
         val stage = File(".sgit/STAGE")
         stage.overwrite("hello")
         
-        FileTools.createRepo()
+        FileTools.createRepo
 
         stage.contentAsString shouldEqual "hello"
         sgit.delete()
@@ -81,7 +81,7 @@ class FileToolsTest extends FunSuite {
         FileTools.createFileOrDirectory(".sgit", true)
         FileTools.createFileOrDirectory("../.anothersgit", true)
 
-        val currentDir = new JavaFile(new JavaFile(".").getCanonicalPath())
+        val currentDir = new JavaFile(new JavaFile(".").getCanonicalPath)
         val sgit = FileTools.fileExploration(currentDir, ".sgit")   
         val anothersgit = FileTools.fileExploration(currentDir, ".anothersgit")
 
@@ -90,4 +90,5 @@ class FileToolsTest extends FunSuite {
         new JavaFile(".sgit").delete()
         new JavaFile("../.anothersgit").delete()
     }
+
 }

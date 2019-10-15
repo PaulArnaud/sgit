@@ -7,7 +7,7 @@ import org.apache.commons.codec.digest.DigestUtils
 
 object FileTools {
     
-    def createRepo() : Unit = {
+    def createRepo : Unit = {
         createFileOrDirectory(".sgit", true)
         createFileOrDirectory(".sgit/tags", true)
         createFileOrDirectory(".sgit/branchs", true)
@@ -38,45 +38,50 @@ object FileTools {
     }
 
     def fileExploration(directory: JavaFile, research: String) : Option[JavaFile] = {
-        val root = directory.listFiles().find( f => f.getName() == research )
+        val root = directory.listFiles.find( f => f.getName == research )
         if (root.isDefined) {
             root
         }
         else {
-            if (directory.getParentFile() == null) {
+            if (directory.getParentFile == null) {
                 None
             }
             else {
-                fileExploration(directory.getParentFile(), research)
+                fileExploration(directory.getParentFile, research)
             }
         }
     }
 
     def listFilesInDirectory(root: JavaFile): Array[JavaFile] = {
-        val (directory, files) = root.listFiles.partition( e => e.isDirectory() )
-        return files ++ directory.filter( c => c.getName() != ".sgit").flatMap( d => listFilesInDirectory(d))
+        val (directory, files) = root.listFiles.partition( e => e.isDirectory )
+        return files ++ directory.filter( c => c.getName != ".sgit").flatMap( d => listFilesInDirectory(d))
     }
 
-    def filesFromStage(root: JavaFile) : Array[JavaFile] = {
-        val rootPath = root.getAbsolutePath 
-        val stageContent = FileTools.readFile(rootPath+"/.sgit/STAGE")
-        return stageContent.split("\n").map( s => new JavaFile(rootPath + s.split(" ")(1)))
+    def filesFromStage(rootPath: String) : Array[JavaFile] = {
+        val stageContent = FileTools
+            .readFile(rootPath+"/.sgit/STAGE")
+            .split("\n")
+        if (stageContent(0) != "") {
+            stageContent.map( s => new JavaFile(s.split(" ")(1)))
+        }
+        else {
+            Array()
+        }
     }
 
-    def sha1FromStage(root: JavaFile, file: JavaFile) : String = {
-        val rootPath = root.getAbsolutePath 
-        val stageContent = FileTools.readFile(root.getCanonicalPath() +"/.sgit/STAGE")
-        val line = stageContent.split("\n").find( s => new JavaFile(rootPath + s.split(" ")(1)) == file)
+    def sha1FromStage(rootPath: String, file: JavaFile) : String = {
+        val filePath = file.getCanonicalPath
+        val stageContent = FileTools.readFile(rootPath +"/.sgit/STAGE")
+        val line = stageContent.split("\n").find( s => s.split(" ")(1) == filePath)
         line.get.split(" ")(0)
     }
 
     def getSHA1(file: JavaFile) : String = {
-        val fileContent = scala.io.Source.fromFile(file.getCanonicalPath()).mkString
+        val fileContent = scala.io.Source.fromFile(file.getCanonicalPath).mkString
         return DigestUtils.sha1Hex(fileContent)
     }
 
-    def findCommit(root: JavaFile, name: String) : Option[JavaFile] = {
-        val rootPath = root.getCanonicalPath
+    def findCommit(rootPath: String, name: String) : Option[JavaFile] = {
         if ((rootPath + "/.sgit/objects/" + name).toFile.exists) {
             Some(new JavaFile(rootPath + "/.sgit/objects/" + name))
         }
@@ -93,9 +98,8 @@ object FileTools {
         }
     }
 
-    def checkoutFromCommit(root: JavaFile, commit: JavaFile): Unit = {
-        val rootPath = root.getCanonicalPath()
-        val commitContent = readFile(commit.getCanonicalPath())
+    def checkoutFromCommit(rootPath: String, commit: JavaFile): Unit = {
+        val commitContent = readFile(commit.getCanonicalPath)
         val files = commitContent
             .split("\n")
             .tail
@@ -108,13 +112,17 @@ object FileTools {
             })
     }
 
-    def listBranchs(root: JavaFile) : Array[JavaFile] = {
-        val rootPath = root.getCanonicalPath() 
-        new JavaFile(rootPath + "/.sgit/branchs").listFiles()
+    def listBranchs(rootPath: String) : Array[JavaFile] = {
+        new JavaFile(rootPath + "/.sgit/branchs").listFiles
     }
 
-    def listTags(root: JavaFile) : Array[JavaFile] = {
-        val rootPath = root.getCanonicalPath() 
-        new JavaFile(rootPath + "/.sgit/tags").listFiles()
+    def listTags(rootPath: String) : Array[JavaFile] = {
+        new JavaFile(rootPath + "/.sgit/tags").listFiles
+    }
+
+    def createBlop(rootPath: String, blopName: String, blopContent: String): Unit = {
+        val blopFullPath = rootPath + "/.sgit/objects/" + blopName
+        createFileOrDirectory(blopFullPath, false)
+        writeFile(blopFullPath, blopContent)
     }
 }

@@ -1,10 +1,10 @@
 package sgit
 import java.io.File
 
-class WorkingDirectory (root: File) {
+class WorkingDirectory (rootPath: String) {
 
-    var wdfiles : Array[File] = FileTools.listFilesInDirectory(root)
-    val filesStaged : Array[File] = FileTools.filesFromStage(root)
+    var wdfiles : Array[File] = FileTools.listFilesInDirectory(new File(rootPath))
+    val filesStaged : Array[File] = FileTools.filesFromStage(rootPath)
 
     def getDeletedFiles : Array[File] = {
         return filesStaged.diff(wdfiles)
@@ -16,12 +16,12 @@ class WorkingDirectory (root: File) {
 
     def getModifiedAndUnmodifiedFiles : (Array[File], Array[File]) = {
         wdfiles.intersect(filesStaged).partition( f => {
-            FileTools.sha1FromStage(root, f) == FileTools.getSHA1(f)
+            FileTools.sha1FromStage(rootPath, f) == FileTools.getSHA1(f)
         })
     }
 
     def contains(files: Array[File]) : (Array[File], Array[File]) = {
-        files.partition( f => wdfiles.contains(f) )
+        files.partition( f => f.getCanonicalPath.contains(rootPath))
     }
 
 }

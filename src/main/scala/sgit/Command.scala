@@ -4,57 +4,49 @@ import java.io.File
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import java.time.Instant
-import java.nio.file.Files
 
 object Command {
     
-    def init() : Unit = {
-        FileTools.createRepo()
+    def init : Unit = {
+        FileTools.createRepo
     }
 
-    def status(root: File, wd: WorkingDirectory) : Unit = {
+    def status(wd: WorkingDirectory) : Unit = {
         MessagePrinter.printFiles(Console.RED, "Deleted Files", wd.getDeletedFiles)
         MessagePrinter.printFiles(Console.YELLOW, "Untracked Files", wd.getUntrackedFiles)
         MessagePrinter.printFiles(Console.BLUE, "Modified Files", wd.getModifiedAndUnmodifiedFiles._2)
     }
 
-    def diff() : Unit = {
+    def diff : Unit = {
 
     }
 
-    def add(root: File, strings: Array[String], wd: WorkingDirectory) : Unit = {
-
-        /*
-        pour chaque fichier : on regarde 
-
-        _ si il est situé dans le dossier de travail
-            _ si il est traqué 
-                _ si a pas été modifé remettre tout le stage
-                _ si il a été modifié recréer tout le stage  
-            _ si il est pas traqué  (remettre tout le stage + le fichier)
-
-
-
-        
-        val (files, directorys) = strings.map( s => new File(s)).partition( f => f.isFile() )
+    def add(rootPath: String, strings: Array[String], wd: WorkingDirectory) : Unit = {
+        val (files, directorys) = strings.map( s => new File(s)).partition( f => f.isFile )
 
         val allFiles = files ++ directorys.flatMap( d => FileTools.listFilesInDirectory(d) )
 
         val (inDirectory, outDirectory) = wd.contains(allFiles)
-        MessagePrinter.printFiles(Console.MAGENTA, "fatal : out of repository", outDirectory)
+        MessagePrinter.printFiles(Console.MAGENTA, "Fatal : out of repository", outDirectory)
 
-        val untrackedFiles = wd.getUntrackedFiles
-        val filesToAdd = untrackedFiles.filter( f => untrackedFiles.contains(f) )
-        */
+        inDirectory.foreach( f => {
+            val stageContent = FileTools.readFile(rootPath+"/.sgit/STAGE")
+            if (stageContent.contains(f.getCanonicalPath)) {
+                Stage.update(rootPath, f)
+            }
+            else {
+                Stage.add(rootPath, f)
+            }
+        })
+
     }
 
-    def commit(root: File, wd: WorkingDirectory, commitName : String) : Unit = {
-        val rootPath = root.getCanonicalPath()
+    def commit(rootPath: String, wd: WorkingDirectory, commitName : String) : Unit = {
         val stageContent = FileTools.readFile(rootPath + "/.sgit/STAGE")
         val sha1stage = DigestUtils.sha1Hex(stageContent).toString
         val fileName = rootPath + "/.sgit/objects/" + sha1stage
         val lastCommit = FileTools.readFile(rootPath+"/.sgit/REF")
-        val commitFirstLine = sha1stage + " " + commitName + " " + Instant.now().toString() +" "+ lastCommit + "\n"
+        val commitFirstLine = sha1stage + " " + commitName + " " + Instant.now.toString +" "+ lastCommit + "\n"
         /* Création du commit : la première ligne est composée du nom du commit , de la date 
         et du commit précédent */
 
@@ -70,56 +62,59 @@ object Command {
         FileTools.writeFile(rootPath+"/.sgit/branch/"+ actualBranch, sha1stage)
     }
 
-    def log(root: File) : Unit = {
-        val logs = FileTools.readFile(root.getCanonicalPath() + "/.sgit/LOGS")
-        println(logs)
+    def log(rootPath: String, p: Boolean, stat: Boolean) : Unit = {
+        if (p) {
+
+        }
+        else if (stat){
+
+        }
+        else {
+            val logs = FileTools.readFile(rootPath + "/.sgit/LOGS")
+            println(logs)
+        }
+
     }
 
-    def newBranch(root: File, branchName: String) : Unit = {
-        /*
-        create a new file with the name of the branch in the branch directory and a reference to the last commit
-        */
-        val newBranchFile = root.getCanonicalPath() + "/.sgit/branch/" + branchName
+    def newBranch(rootPath: String, branchName: String) : Unit = {
+        val newBranchFile = rootPath + "/.sgit/branchs/" + branchName
         FileTools.createFileOrDirectory(newBranchFile, false)
-        val lastCommit = FileTools.readFile(root.getCanonicalPath() + "/.sgit/REF")
+        val lastCommit = FileTools.readFile(rootPath + "/.sgit/REF")
         FileTools.writeFile(newBranchFile, lastCommit)
+        FileTools.writeFile(rootPath + "/.sgit/HEAD", branchName)
     }
 
-    def checkout(root: File, name: String) : Unit = {
-        /*
-        rebuild th working directory 
-        */
-        val rootPath = root.getCanonicalPath()
-        val commit = FileTools.findCommit(root, name)
+    def checkout(rootPath: String, name: String) : Unit = {
+        val commit = FileTools.findCommit(rootPath, name)
         commit match {
             case Some(commit) => {
-                FileUtils.cleanDirectory(root); 
-                FileTools.checkoutFromCommit(root, commit)
-                FileTools.writeFile(rootPath+"/.sgit/REF", commit.getName())
+                FileUtils.cleanDirectory(new File(rootPath)); 
+                FileTools.checkoutFromCommit(rootPath, commit)
+                FileTools.writeFile(rootPath + "/.sgit/REF", commit.getName)
             }
             case None => println(Console.RED + "No tag/branch/commit with this name : " + name )
         }
 
     }
 
-    def tag(root: File, tagName: String) : Unit = {
-        val newTagFile = root.getCanonicalPath() + "/.sgit/tag/" + tagName
+    def newTag(rootPath: String, tagName: String) : Unit = {
+        val newTagFile = rootPath + "/.sgit/tags/" + tagName
         FileTools.createFileOrDirectory(newTagFile, false)
-        val lastCommit = FileTools.readFile(root.getCanonicalPath() + "/.sgit/REF")
+        val lastCommit = FileTools.readFile(rootPath + "/.sgit/REF")
         FileTools.writeFile(newTagFile, lastCommit)
     }
 
-    def merge() : Unit = {
+    def merge : Unit = {
 
     }
 
-    def rebase() : Unit = {
+    def rebase : Unit = {
 
     }
 
-    def listTagsAndBranch(root: File) : Unit = {
-        MessagePrinter.printNameFile(Console.WHITE, "Tags", FileTools.listTags(root))
-        MessagePrinter.printNameFile(Console.BLUE, "Branchs", FileTools.listBranchs(root))
+    def listTagsAndBranch(rootPath: String) : Unit = {
+        MessagePrinter.printNameFile(Console.WHITE, "Tags", FileTools.listTags(rootPath))
+        MessagePrinter.printNameFile(Console.BLUE, "Branchs", FileTools.listBranchs(rootPath))
     }
 
 }

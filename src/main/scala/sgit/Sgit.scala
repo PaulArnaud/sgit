@@ -11,10 +11,9 @@ object Sgit {
         command: String = "", 
         files: Array[String] = Array(), 
         p: Boolean = false,
-        stats: Boolean = false,
+        stat: Boolean = false,
         branch_tag_commit: String = "",
-        a: Boolean = false,
-        v: Boolean = false
+        av: Boolean = false
     )
 
     val builder = OParser.builder[Config]
@@ -35,8 +34,8 @@ object Sgit {
                 .action((_, c) => c.copy(command = "add"))
                 .children(
                     arg[String]("<file>...")
-                    .unbounded()
-                    .required()
+                    .unbounded
+                    .required
                     .action((x, c) => c.copy(files = c.files :+ x))
                     .text("files to add")),
             // Diff option
@@ -51,11 +50,11 @@ object Sgit {
                     opt[Unit]("p")
                         .text("Show changes overtime")
                         .action((_, c) => c.copy(p = true)),
-                    opt[Unit]("stats")
+                    opt[Unit]("stat")
                         .text(
                         "show the stats of insertion and deletion of each commited file"
                         )
-                        .action((_, c) => c.copy(stats = true))
+                        .action((_, c) => c.copy(stat = true))
                 ),
             // Branch option
             cmd("branch")
@@ -63,20 +62,24 @@ object Sgit {
                 .action((_, c) => c.copy(command = "branch"))
                 .children(
                     arg[String]("name")
-                        .required()
+                        .optional()
                         .action((x, c) => c.copy(branch_tag_commit = x))
                         .text("name of the branch"),
-                    opt[Unit]("a")
-                        .action((_, c) => c.copy(a = true))
-                        .text("display all branches"),
-                    opt[Unit]("v")
-                        .action((_, c) => c.copy(v = true))
-                        .text("show hash and commit subject line for each branch's head")
+                    opt[Unit]("av")
+                        .action((_, c) => c.copy(av = true))
+                        .text("display all branches")
                 ),
             // Checkout option
             cmd("checkout").text("Switch branches or restore working tree files").action((_, c) => c.copy(command = "checkout")),
             // Tag option
-            cmd("tag").text("Initialize a repository").action((_, c) => c.copy(command = "tag")),
+            cmd("tag")
+                .text("Initialize a repository")
+                .action((_, c) => c.copy(command = "tag"))
+                .children(
+                    arg[String]("name")
+                        .required
+                        .action((x, c) => c.copy(branch_tag_commit = x))
+                        .text("name of the tag")),
             // Merge option
             cmd("merge").text("Join two or more development histories together").action((_, c) => c.copy(command = "merge")),
             // Rebase option
@@ -88,19 +91,33 @@ object Sgit {
         case Some(config) => {
             config.command match {
                 case "init" => {
-                    Command.init()
+                    Command.init
                 }
                 case _ => {
                     Repository.getRoot match {
                         case Some(root) => {
-                            val rootDirectory = root.getParentFile()
-                            val wd = new WorkingDirectory(rootDirectory)
+                            val rootPath = root.getParentFile.getCanonicalPath
+                            val wd = new WorkingDirectory(rootPath)
                             config.command match {
                                 case "add" => {
-                                    Command.add(rootDirectory, config.files, wd)
+                                    Command.add(rootPath, config.files, wd)
                                 }
                                 case "status" => {
-                                    Command.status(rootDirectory, wd)
+                                    Command.status(wd)
+                                }
+                                case "log" => {
+                                    Command.log(rootPath, config.p, config.stat)
+                                }
+                                case "branch" => {
+                                    if (config.av) {
+                                        Command.listTagsAndBranch(rootPath)
+                                    }
+                                    else {
+                                        Command.newBranch(rootPath, config.branch_tag_commit)
+                                    }
+                                }
+                                case "tag" => {
+                                    Command.newTag(rootPath, config.branch_tag_commit)
                                 }
                             }
                         }
@@ -111,7 +128,7 @@ object Sgit {
                 }
             }
         }
-        case _ => println("Error : no valids arguments, please read the help \n-> sgit --help")
+        case _ => println("Sorry")
     }
 
     }
