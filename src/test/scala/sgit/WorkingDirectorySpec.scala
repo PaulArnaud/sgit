@@ -19,4 +19,8 @@ class WorkingDirectoryTest extends FunSuite {
         pending
     }
 
+    test("contains should"){
+        pending
+    }
+
 }

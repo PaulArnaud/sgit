@@ -21,13 +21,4 @@ class LCSTest extends FunSuite {
         assert(testedValue === Array("php File","}"))
     }
 
-    test("Compute the LCS with long string"){
-       val a = "AAAONFPD"
-       val b = "AONIVIPK"
-       val testedValue = LCS.lcsRec(a,b)
-       println(testedValue)
-
-       assert(testedValue.toArray.size != 0)
-    }
-
 }

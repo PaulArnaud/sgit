@@ -48,7 +48,13 @@ object Sgit {
         // Commit option
         cmd("commit")
           .text("Record changes to the repository")
-          .action((_, c) => c.copy(command = "commit")),
+          .action((_, c) => c.copy(command = "commit"))
+          .children(
+            arg[String]("name")
+              .required()
+              .action((x, c) => c.copy(branch_tag_commit = x))
+              .text("name of the commit")
+          ),
         // Log option
         cmd("log")
           .text("Show commit logs")
@@ -130,6 +136,9 @@ object Sgit {
                   }
                   case "tag" => {
                     Command.newTag(rootPath, config.branch_tag_commit)
+                  }
+                  case "commit" => {
+                    Command.commit(rootPath, wd, config.branch_tag_commit)
                   }
                 }
               }

@@ -1,54 +1,28 @@
 package sgit
 
-import better.files._
-import better.files.File._
-import java.io.{
-  File => JavaFile,
-  BufferedWriter,
-  BufferedReader,
-  FileInputStream,
-  FileOutputStream,
-  FileWriter,
-  FileReader
-}
+import java.io.File
 import org.apache.commons.codec.digest.DigestUtils
 
 object FileTools {
 
   def createRepo: Unit = {
-    createFileOrDirectory(".sgit", true)
-    createFileOrDirectory(".sgit/tags", true)
-    createFileOrDirectory(".sgit/branchs", true)
-    createFileOrDirectory(".sgit/objects", true)
-    createFileOrDirectory(".sgit/STAGE", false)
-    createFileOrDirectory(".sgit/HEAD", false)
-    createFileOrDirectory(".sgit/LOGS", false)
-    createFileOrDirectory(".sgit/REF", false)
-    writeFile(".sgit/HEAD", "master")
-    createFileOrDirectory(".sgit/branchs/master", false)
-    writeFile(".sgit/branchs/master", "INITIAL COMMIT")
-  }
-
-  def createFileOrDirectory(name: String, isDirectory: Boolean): Unit = {
-    name.toFile.createIfNotExists(isDirectory)
-  }
-
-  def writeFile(nameFile: String, content: String): Unit = {
-    nameFile.toFile.overwrite(content)
-  }
-
-  def addLineInFile(nameFile: String, newLine: String): Unit = {
-    nameFile.toFile.appendLines(newLine)
-  }
-
-  def readFile(nameFile: String): String = {
-    nameFile.toFile.contentAsString
+    FileManager.createFileOrDirectory(s".sgit", true)
+    FileManager.createFileOrDirectory(s".sgit${File.separator}tags", true)
+    FileManager.createFileOrDirectory(s".sgit${File.separator}branchs", true)
+    FileManager.createFileOrDirectory(s".sgit${File.separator}objects", true)
+    FileManager.createFileOrDirectory(s".sgit${File.separator}STAGE", false)
+    FileManager.createFileOrDirectory(s".sgit${File.separator}HEAD", false)
+    FileManager.createFileOrDirectory(s".sgit${File.separator}LOGS", false)
+    FileManager.createFileOrDirectory(s".sgit${File.separator}REF", false)
+    FileManager.writeFile(s".sgit${File.separator}HEAD", "master")
+    FileManager.createFileOrDirectory(s".sgit${File.separator}branchs${File.separator}master", false)
+    FileManager.writeFile(s".sgit${File.separator}branchs${File.separator}master", "INITIAL COMMIT")
   }
 
   def fileExploration(
-      directory: JavaFile,
+      directory: File,
       research: String
-  ): Option[JavaFile] = {
+  ): Option[File] = {
     val root = directory.listFiles.find(f => f.getName == research)
     if (root.isDefined) {
       root
@@ -61,70 +35,75 @@ object FileTools {
     }
   }
 
-  def listFilesInDirectory(root: JavaFile): Array[JavaFile] = {
+  def listFilesInDirectory(root: File): Array[File] = {
     val (directory, files) = root.listFiles.partition(e => e.isDirectory)
     return files ++ directory
       .filter(c => c.getName != ".sgit")
       .flatMap(d => listFilesInDirectory(d))
   }
 
-  def filesFromStage(rootPath: String): Array[JavaFile] = {
-    val stageContent = FileTools
-      .readFile(rootPath + "/.sgit/STAGE")
+  def filesFromStage(rootPath: String): Array[File] = {
+    val stageContent = FileManager
+      .readFile(s"${rootPath}${File.separator}.sgit${File.separator}STAGE")
       .split("\n")
     if (stageContent(0) != "") {
-      stageContent.map(s => new JavaFile(s.split(" ")(1)))
+      stageContent.map(s => new File(s.split(" ")(1)))
     } else {
       Array()
     }
   }
 
-  def sha1FromStage(rootPath: String, file: JavaFile): String = {
+  def sha1FromStage(rootPath: String, file: File): String = {
     val filePath = file.getCanonicalPath
-    val stageContent = FileTools.readFile(rootPath + "/.sgit/STAGE")
+    val stageContent = FileManager.readFile(s"${rootPath}${File.separator}.sgit${File.separator}STAGE")
     val line = stageContent.split("\n").find(s => s.split(" ")(1) == filePath)
     line.get.split(" ")(0)
   }
 
-  def getSHA1(file: JavaFile): String = {
-    val fileContent = scala.io.Source.fromFile(file.getCanonicalPath).mkString
+  def getSHA1(file: File): String = {
+    val fileContent = FileManager.readFile(file.getCanonicalPath)
     return DigestUtils.sha1Hex(fileContent)
   }
 
-  def findCommit(rootPath: String, name: String): Option[JavaFile] = {
-    if ((rootPath + "/.sgit/objects/" + name).toFile.exists) {
-      Some(new JavaFile(rootPath + "/.sgit/objects/" + name))
-    } else if ((rootPath + "/.sgit/branch/" + name).toFile.exists) {
-      val commitName = readFile(rootPath + "/.sgit/branch/" + name)
-      Some(new JavaFile(rootPath + "/.sgit/objects/" + commitName))
-    } else if ((rootPath + "/.sgit/tag/" + name).toFile.exists) {
-      val commitName = readFile(rootPath + "/.sgit/tag/" + name)
-      Some(new JavaFile(rootPath + "/.sgit/objects/" + commitName))
+  def findCommit(rootPath: String, name: String): Option[File] = {
+    val sep = File.separator
+    val sgit = s"${rootPath}${sep}.sgit${sep}"
+    if (new File(s"${sgit}objects${sep}${name}").exists) {
+      Some(new File(s"${sgit}objects${sep}${name}"))
+    } else if (new File(s"${sgit}branch${sep}${name}").exists) {
+      val commitName = FileManager.readFile(s"${sgit}branch${sep}${name}")
+      Some(new File(s"${sgit}objects${sep}${commitName}"))
+    } else if (new File(s"${sgit}tag${sep}${name}").exists) {
+      val commitName = FileManager.readFile(s"${sgit}tag${sep}${name}")
+      Some(new File(s"${sgit}objects${sep}${commitName}"))
     } else {
       None
     }
   }
 
-  def checkoutFromCommit(rootPath: String, commit: JavaFile): Unit = {
-    val commitContent = readFile(commit.getCanonicalPath)
+  def checkoutFromCommit(rootPath: String, commit: File): Unit = {
+    val commitContent = FileManager.readFile(commit.getCanonicalPath)
     val files = commitContent
       .split("\n")
       .tail
       .foreach(l => {
         val linesplit = l.split(" ")
-        val fileContent = readFile(rootPath + "/.sgit/objects" + linesplit(0))
+        val fileContent =
+          FileManager.readFile(s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${linesplit(0)}")
         val fileName = rootPath + linesplit(1)
-        createFileOrDirectory(fileName, false)
-        writeFile(fileName, fileContent)
+        FileManager.createFileOrDirectory(fileName, false)
+        FileManager.writeFile(fileName, fileContent)
       })
   }
 
-  def listBranchs(rootPath: String): Array[JavaFile] = {
-    new JavaFile(s"${rootPath}${JavaFile.separator}.sgit${JavaFile.separator}branchs").listFiles
+  def listBranchs(rootPath: String): Array[File] = {
+    new File(
+      s"${rootPath}${File.separator}.sgit${File.separator}branchs"
+    ).listFiles
   }
 
-  def listTags(rootPath: String): Array[JavaFile] = {
-    new JavaFile(rootPath + "/.sgit/tags").listFiles
+  def listTags(rootPath: String): Array[File] = {
+    new File(s"${rootPath}${File.separator}.sgit${File.separator}tags").listFiles
   }
 
   def createBlop(
@@ -132,8 +111,8 @@ object FileTools {
       blopName: String,
       blopContent: String
   ): Unit = {
-    val blopFullPath = rootPath + "/.sgit/objects/" + blopName
-    createFileOrDirectory(blopFullPath, false)
-    writeFile(blopFullPath, blopContent)
+    val blopFullPath = s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${blopName}"
+    FileManager.createFileOrDirectory(blopFullPath, false)
+    FileManager.writeFile(blopFullPath, blopContent)
   }
 }

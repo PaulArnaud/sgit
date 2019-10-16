@@ -7,10 +7,10 @@ object Stage {
 
   def update(rootPath: String, modifiedFile: File): Unit = {
     val filePath = modifiedFile.getCanonicalPath
-    val content = FileTools.readFile(filePath)
+    val content = FileManager.readFile(filePath)
     val sha1File = DigestUtils.sha1Hex(content)
     FileTools.createBlop(rootPath, sha1File, content)
-    val stageContent = FileTools.readFile(rootPath + "/.sgit/STAGE")
+    val stageContent = FileManager.readFile(rootPath + "/.sgit/STAGE")
     val newStage = stageContent
       .split("\n")
       .foldLeft("")((res, line) => {
@@ -20,15 +20,15 @@ object Stage {
           addString(res, line + "\n")
         }
       })
-    FileTools.writeFile(rootPath + "/.sgit/STAGE", newStage)
+    FileManager.writeFile(rootPath + "/.sgit/STAGE", newStage)
   }
 
   def add(rootPath: String, newFile: File): Unit = {
     val filePath = newFile.getCanonicalPath
-    val content = FileTools.readFile(filePath)
+    val content = FileManager.readFile(filePath)
     val sha1File = DigestUtils.sha1Hex(content)
     FileTools.createBlop(rootPath, sha1File, content)
-    FileTools.addLineInFile(
+    FileManager.addLineInFile(
       rootPath + "/.sgit/STAGE",
       sha1File + " " + filePath
     )

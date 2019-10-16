@@ -8,39 +8,6 @@ import better.files.File._
 
 class FileToolsTest extends FunSuite {
 
-    test("createFileOrDirectory should create a file or a directory"){
-        FileTools.createFileOrDirectory("directory",true)
-        FileTools.createFileOrDirectory("file",false)
-
-        val directory = new JavaFile("directory")
-        val file = new JavaFile("file")
-
-        directory should exist
-        file should exist
-
-        directory.delete()
-        file.delete()
-    }
-
-    test("writeFile should write on the file"){
-        FileTools.createFileOrDirectory("file",false)
-
-        FileTools.writeFile("file", "Test content")
-
-        val file = File("file")
-
-        file.contentAsString shouldEqual "Test content"
-        new JavaFile("file").delete()
-    }
-
-    test("readFile should return the content of the file"){
-        FileTools.createFileOrDirectory("file",false)
-        FileTools.writeFile("file", "Test content")
-
-        FileTools.readFile("file") shouldEqual "Test content"
-        new JavaFile("file").delete()
-    }
-
     test("createRepo should create a repository directory") {
         FileTools.createRepo
 
@@ -78,8 +45,8 @@ class FileToolsTest extends FunSuite {
     }
 
     test("fileExploration should return the researched directory in current or parents directory"){
-        FileTools.createFileOrDirectory(".sgit", true)
-        FileTools.createFileOrDirectory("../.anothersgit", true)
+        FileManager.createFileOrDirectory(".sgit", true)
+        FileManager.createFileOrDirectory("../.anothersgit", true)
 
         val currentDir = new JavaFile(new JavaFile(".").getCanonicalPath)
         val sgit = FileTools.fileExploration(currentDir, ".sgit")   
@@ -91,4 +58,39 @@ class FileToolsTest extends FunSuite {
         new JavaFile("../.anothersgit").delete()
     }
 
+    test("listFilesInDirectory should list all the files in the directory"){
+        pending
+    }
+
+    test("filesFromStage should list the file in the stage"){
+        pending
+    }
+
+    test("sha1FromStage should return the sha1, stored in stage, of the file pass in arg"){
+        pending
+    }
+
+    test("getSHA1"){
+        pending
+    }
+
+    test("findCommit should retrieve the commit with a Name"){
+        pending
+    }
+
+    test("checkoutFromCommit"){
+        pending
+    }
+
+    test("listBranchs"){
+        pending
+    }
+
+    test("listTags"){
+        pending
+    }
+
+    test("createBlop"){
+        pending
+    }
 }

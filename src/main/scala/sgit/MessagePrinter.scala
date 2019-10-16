@@ -19,4 +19,12 @@ object MessagePrinter {
     }
   }
 
+  def printSimpleMessage(color: String, messageContent: String): Unit = {
+    println(color + messageContent)
+  }
+
+  def printlog(color: String, logContent: String): Unit = {
+    logContent.split("\n").reverse.foreach( s => println(color + s))
+  }
+
 }
