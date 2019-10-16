@@ -15,8 +15,14 @@ object FileTools {
     FileManager.createFileOrDirectory(s".sgit${File.separator}LOGS", false)
     FileManager.createFileOrDirectory(s".sgit${File.separator}REF", false)
     FileManager.writeFile(s".sgit${File.separator}HEAD", "master")
-    FileManager.createFileOrDirectory(s".sgit${File.separator}branchs${File.separator}master", false)
-    FileManager.writeFile(s".sgit${File.separator}branchs${File.separator}master", "INITIAL COMMIT")
+    FileManager.createFileOrDirectory(
+      s".sgit${File.separator}branchs${File.separator}master",
+      false
+    )
+    FileManager.writeFile(
+      s".sgit${File.separator}branchs${File.separator}master",
+      "INITIAL COMMIT"
+    )
   }
 
   def fileExploration(
@@ -55,7 +61,9 @@ object FileTools {
 
   def sha1FromStage(rootPath: String, file: File): String = {
     val filePath = file.getCanonicalPath
-    val stageContent = FileManager.readFile(s"${rootPath}${File.separator}.sgit${File.separator}STAGE")
+    val stageContent = FileManager.readFile(
+      s"${rootPath}${File.separator}.sgit${File.separator}STAGE"
+    )
     val line = stageContent.split("\n").find(s => s.split(" ")(1) == filePath)
     line.get.split(" ")(0)
   }
@@ -89,7 +97,9 @@ object FileTools {
       .foreach(l => {
         val linesplit = l.split(" ")
         val fileContent =
-          FileManager.readFile(s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${linesplit(0)}")
+          FileManager.readFile(
+            s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${linesplit(0)}"
+          )
         val fileName = rootPath + linesplit(1)
         FileManager.createFileOrDirectory(fileName, false)
         FileManager.writeFile(fileName, fileContent)
@@ -111,7 +121,8 @@ object FileTools {
       blopName: String,
       blopContent: String
   ): Unit = {
-    val blopFullPath = s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${blopName}"
+    val blopFullPath =
+      s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${blopName}"
     FileManager.createFileOrDirectory(blopFullPath, false)
     FileManager.writeFile(blopFullPath, blopContent)
   }

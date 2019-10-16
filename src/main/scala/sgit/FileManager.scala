@@ -14,10 +14,9 @@ object FileManager {
   }
 
   def addLineInFile(nameFile: String, newLine: String): Unit = {
-    if (readFile(nameFile)==""){
+    if (readFile(nameFile) == "") {
       writeFile(nameFile, newLine)
-    }
-    else {
+    } else {
       nameFile.toFile.appendLine().append(newLine)
     }
   }

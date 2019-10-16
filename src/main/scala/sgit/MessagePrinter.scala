@@ -24,7 +24,7 @@ object MessagePrinter {
   }
 
   def printlog(color: String, logContent: String): Unit = {
-    logContent.split("\n").reverse.foreach( s => println(color + s))
+    logContent.split("\n").reverse.foreach(s => println(color + s))
   }
 
 }

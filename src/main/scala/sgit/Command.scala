@@ -67,12 +67,14 @@ object Command {
   ): Unit = {
     val stageContent = FileManager.readFile(rootPath + "/.sgit/STAGE")
     val sha1stage = DigestUtils.sha1Hex(stageContent).toString
-    val lastCommit = FileManager.readFile(rootPath + "/.sgit/branchs/" + FileManager.readFile(rootPath + "/.sgit/HEAD"))
+    val lastCommit = FileManager.readFile(
+      rootPath + "/.sgit/branchs/" + FileManager
+        .readFile(rootPath + "/.sgit/HEAD")
+    )
 
     if (sha1stage == lastCommit) {
       MessagePrinter.printSimpleMessage(Console.WHITE, "Nothing to commit")
-    }
-    else {
+    } else {
       val fileName = rootPath + "/.sgit/objects/" + sha1stage
       val commitFirstLine = sha1stage + " " + commitName + " " + Instant.now.toString + " " + lastCommit + "\n"
       val actualBranch = FileManager.readFile(rootPath + "/.sgit/HEAD")
@@ -80,7 +82,10 @@ object Command {
       FileManager.createFileOrDirectory(fileName, false) //creation de l'object commit
       FileManager.writeFile(fileName, commitFirstLine + stageContent) //application du contenu dans ce commit
       FileManager.writeFile(rootPath + "/.sgit/REF", sha1stage) //mise à jour de la référence du dernier commit
-      FileManager.writeFile(rootPath + "/.sgit/branchs/" + actualBranch, sha1stage) //mise à jour de la branche
+      FileManager.writeFile(
+        rootPath + "/.sgit/branchs/" + actualBranch,
+        sha1stage
+      ) //mise à jour de la branche
       FileManager.addLineInFile(rootPath + "/.sgit/LOGS", commitFirstLine) //mise à jour des logs
     }
   }
