@@ -3,7 +3,7 @@ import java.io.File
 
 class WorkingDirectory(rootPath: String) {
 
-  var wdfiles: Array[File] = FileTools.listFilesInDirectory(new File(rootPath))
+  val wdfiles: Array[File] = FileTools.listFilesInDirectory(new File(rootPath))
   val filesStaged: Array[File] = FileTools.filesFromStage(rootPath)
 
   def getDeletedFiles: Array[File] = {

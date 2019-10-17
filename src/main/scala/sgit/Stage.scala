@@ -1,6 +1,7 @@
 package sgit
 
 import java.io.File
+import java.io.File.{separator => sep}
 import org.apache.commons.codec.digest.DigestUtils
 
 object Stage {
@@ -10,7 +11,8 @@ object Stage {
     val content = FileManager.readFile(filePath)
     val sha1File = DigestUtils.sha1Hex(content)
     FileTools.createBlop(rootPath, sha1File, content)
-    val stageContent = FileManager.readFile(rootPath + "/.sgit/STAGE")
+    val stageContent =
+      FileManager.readFile(s"${rootPath}${sep}.sgit${sep}STAGE")
     val newStage = stageContent
       .split("\n")
       .foldLeft("")((res, line) => {
@@ -20,7 +22,7 @@ object Stage {
           addString(res, line + "\n")
         }
       })
-    FileManager.writeFile(rootPath + "/.sgit/STAGE", newStage)
+    FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}STAGE", newStage)
   }
 
   def add(rootPath: String, newFile: File): Unit = {
@@ -29,7 +31,7 @@ object Stage {
     val sha1File = DigestUtils.sha1Hex(content)
     FileTools.createBlop(rootPath, sha1File, content)
     FileManager.addLineInFile(
-      rootPath + "/.sgit/STAGE",
+      s"${rootPath}${sep}.sgit${sep}STAGE",
       sha1File + " " + filePath
     )
   }

@@ -1,8 +1,6 @@
 package sgit
 
 import scopt.OParser
-import java.io.{File => JavaFile}
-import java.rmi.activation.ActivationGroupDesc.CommandEnvironment
 
 object Sgit {
   def main(args: Array[String]): Unit = {
@@ -116,6 +114,7 @@ object Sgit {
             Repository.getRoot match {
               case Some(root) => {
                 val rootPath = root.getParentFile.getCanonicalPath
+                val repository = new Repository(rootPath)
                 val wd = new WorkingDirectory(rootPath)
                 config.command match {
                   case "add" => {
@@ -144,14 +143,17 @@ object Sgit {
               }
               case None => {
                 println(
-                  "No repository found. Please try to initialize one \n--> sgit init"
+                  MessagePrinter.printSimpleMessage(
+                    Console.RED,
+                    "No repository found. Please try to initialize one \n--> sgit init"
+                  )
                 )
               }
             }
           }
         }
       }
-      case _ => println("Sorry")
+      case _ => MessagePrinter.printSimpleMessage(Console.RED, "Sorry")
     }
   }
 }

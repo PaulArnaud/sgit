@@ -1,7 +1,5 @@
 package sgit
 
-package sgit
-
 import org.scalatest.FunSuite
 import java.io.File
     

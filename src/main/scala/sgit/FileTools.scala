@@ -1,26 +1,27 @@
 package sgit
 
 import java.io.File
+import java.io.File.{separator => sep}
 import org.apache.commons.codec.digest.DigestUtils
 
 object FileTools {
 
   def createRepo: Unit = {
     FileManager.createFileOrDirectory(s".sgit", true)
-    FileManager.createFileOrDirectory(s".sgit${File.separator}tags", true)
-    FileManager.createFileOrDirectory(s".sgit${File.separator}branchs", true)
-    FileManager.createFileOrDirectory(s".sgit${File.separator}objects", true)
-    FileManager.createFileOrDirectory(s".sgit${File.separator}STAGE", false)
-    FileManager.createFileOrDirectory(s".sgit${File.separator}HEAD", false)
-    FileManager.createFileOrDirectory(s".sgit${File.separator}LOGS", false)
-    FileManager.createFileOrDirectory(s".sgit${File.separator}REF", false)
-    FileManager.writeFile(s".sgit${File.separator}HEAD", "master")
+    FileManager.createFileOrDirectory(s".sgit${sep}tags", true)
+    FileManager.createFileOrDirectory(s".sgit${sep}branchs", true)
+    FileManager.createFileOrDirectory(s".sgit${sep}objects", true)
+    FileManager.createFileOrDirectory(s".sgit${sep}STAGE", false)
+    FileManager.createFileOrDirectory(s".sgit${sep}HEAD", false)
+    FileManager.createFileOrDirectory(s".sgit${sep}LOGS", false)
+    FileManager.createFileOrDirectory(s".sgit${sep}REF", false)
+    FileManager.writeFile(s".sgit${sep}HEAD", "master")
     FileManager.createFileOrDirectory(
-      s".sgit${File.separator}branchs${File.separator}master",
+      s".sgit${sep}branchs${sep}master",
       false
     )
     FileManager.writeFile(
-      s".sgit${File.separator}branchs${File.separator}master",
+      s".sgit${sep}branchs${sep}master",
       "INITIAL COMMIT"
     )
   }
@@ -50,7 +51,7 @@ object FileTools {
 
   def filesFromStage(rootPath: String): Array[File] = {
     val stageContent = FileManager
-      .readFile(s"${rootPath}${File.separator}.sgit${File.separator}STAGE")
+      .readFile(s"${rootPath}${sep}.sgit${sep}STAGE")
       .split("\n")
     if (stageContent(0) != "") {
       stageContent.map(s => new File(s.split(" ")(1)))
@@ -62,7 +63,7 @@ object FileTools {
   def sha1FromStage(rootPath: String, file: File): String = {
     val filePath = file.getCanonicalPath
     val stageContent = FileManager.readFile(
-      s"${rootPath}${File.separator}.sgit${File.separator}STAGE"
+      s"${rootPath}${sep}.sgit${sep}STAGE"
     )
     val line = stageContent.split("\n").find(s => s.split(" ")(1) == filePath)
     line.get.split(" ")(0)
@@ -74,7 +75,6 @@ object FileTools {
   }
 
   def findCommit(rootPath: String, name: String): Option[File] = {
-    val sep = File.separator
     val sgit = s"${rootPath}${sep}.sgit${sep}"
     if (new File(s"${sgit}objects${sep}${name}").exists) {
       Some(new File(s"${sgit}objects${sep}${name}"))
@@ -98,7 +98,7 @@ object FileTools {
         val linesplit = l.split(" ")
         val fileContent =
           FileManager.readFile(
-            s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${linesplit(0)}"
+            s"${rootPath}${sep}.sgit${sep}objects${sep}${linesplit(0)}"
           )
         val fileName = rootPath + linesplit(1)
         FileManager.createFileOrDirectory(fileName, false)
@@ -108,12 +108,12 @@ object FileTools {
 
   def listBranchs(rootPath: String): Array[File] = {
     new File(
-      s"${rootPath}${File.separator}.sgit${File.separator}branchs"
+      s"${rootPath}${sep}.sgit${sep}branchs"
     ).listFiles
   }
 
   def listTags(rootPath: String): Array[File] = {
-    new File(s"${rootPath}${File.separator}.sgit${File.separator}tags").listFiles
+    new File(s"${rootPath}${sep}.sgit${sep}tags").listFiles
   }
 
   def createBlop(
@@ -122,19 +122,40 @@ object FileTools {
       blopContent: String
   ): Unit = {
     val blopFullPath =
-      s"${rootPath}${File.separator}.sgit${File.separator}objects${File.separator}${blopName}"
+      s"${rootPath}${sep}.sgit${sep}objects${sep}${blopName}"
     FileManager.createFileOrDirectory(blopFullPath, false)
     FileManager.writeFile(blopFullPath, blopContent)
   }
 
   def getBranch(rootPath: String): Option[String] = {
-    val sgit = s"${rootPath}${File.separator}.sgit${File.separator}"
+    val sgit = s"${rootPath}${sep}.sgit${sep}"
     val head = FileManager.readFile(s"${sgit}HEAD")
-    val branch = new File(s"${sgit}branchs${File.separator}${head}")
+    val branch = new File(s"${sgit}branchs${sep}${head}")
     if (branch.exists) {
       Some(head)
     } else {
       None
     }
   }
+
+  def saveBlop(rootPath: String, sha1: String, filePath: String): Unit = {
+    val fileContent = FileManager.readFile(filePath)
+    val blopPath = s"${rootPath}${sep}.sgit${sep}objects${sep}${sha1}"
+    FileManager.createFileOrDirectory(blopPath, false)
+    FileManager.writeFile(blopPath, fileContent)
+  }
+
+  def saveCommit(
+      rootPath: String,
+      name: String,
+      message: String,
+      date: String,
+      father: String,
+      blops: Array[Blop]
+  ): Unit = {}
+
+  def listFiles(dirPath: String): Array[File] = {
+    new File(dirPath).listFiles
+  }
+
 }
