@@ -126,4 +126,15 @@ object FileTools {
     FileManager.createFileOrDirectory(blopFullPath, false)
     FileManager.writeFile(blopFullPath, blopContent)
   }
+
+  def getBranch(rootPath: String): Option[String] = {
+    val sgit = s"${rootPath}${File.separator}.sgit${File.separator}"
+    val head = FileManager.readFile(s"${sgit}HEAD")
+    val branch = new File(s"${sgit}branchs${File.separator}${head}")
+    if (branch.exists) {
+      Some(head)
+    } else {
+      None
+    }
+  }
 }

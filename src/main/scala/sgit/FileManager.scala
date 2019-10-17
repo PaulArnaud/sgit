@@ -6,7 +6,7 @@ import better.files.File._
 object FileManager {
 
   def createFileOrDirectory(name: String, isDirectory: Boolean): Unit = {
-    name.toFile.createIfNotExists(isDirectory)
+    name.toFile.createIfNotExists(isDirectory, true)
   }
 
   def writeFile(nameFile: String, content: String): Unit = {
@@ -23,5 +23,9 @@ object FileManager {
 
   def readFile(nameFile: String): String = {
     nameFile.toFile.contentAsString
+  }
+
+  def cleanDirectory(name: String): Unit = {
+    name.toFile.clear()
   }
 }

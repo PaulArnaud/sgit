@@ -2,7 +2,6 @@ package sgit
 
 import java.io.File
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.commons.io.FileUtils
 import java.time.Instant
 
 object Command {
@@ -67,25 +66,36 @@ object Command {
   ): Unit = {
     val stageContent = FileManager.readFile(rootPath + "/.sgit/STAGE")
     val sha1stage = DigestUtils.sha1Hex(stageContent).toString
-    val lastCommit = FileManager.readFile(
+    val lastCommit = FileManager.readFile(rootPath + "/.sgit/REF")
+    /*val lastCommit = FileManager.readFile(
       rootPath + "/.sgit/branchs/" + FileManager
         .readFile(rootPath + "/.sgit/HEAD")
-    )
+    )*/
 
     if (sha1stage == lastCommit) {
       MessagePrinter.printSimpleMessage(Console.WHITE, "Nothing to commit")
     } else {
       val fileName = rootPath + "/.sgit/objects/" + sha1stage
       val commitFirstLine = sha1stage + " " + commitName + " " + Instant.now.toString + " " + lastCommit + "\n"
-      val actualBranch = FileManager.readFile(rootPath + "/.sgit/HEAD")
+      val actualBranch = FileTools.getBranch(rootPath)
+      actualBranch match {
+        case Some(value) => {
+          FileManager.writeFile(
+            rootPath + "/.sgit/branchs/" + actualBranch,
+            sha1stage
+          ) //mise à jour de la branche
+        }
+        case None => {
+          FileManager.writeFile(
+            rootPath + "./sgit/HEAD",
+            sha1stage
+          )
+        }
+      }
 
       FileManager.createFileOrDirectory(fileName, false) //creation de l'object commit
       FileManager.writeFile(fileName, commitFirstLine + stageContent) //application du contenu dans ce commit
       FileManager.writeFile(rootPath + "/.sgit/REF", sha1stage) //mise à jour de la référence du dernier commit
-      FileManager.writeFile(
-        rootPath + "/.sgit/branchs/" + actualBranch,
-        sha1stage
-      ) //mise à jour de la branche
       FileManager.addLineInFile(rootPath + "/.sgit/LOGS", commitFirstLine) //mise à jour des logs
     }
   }
@@ -99,30 +109,55 @@ object Command {
 
   def newBranch(rootPath: String, branchName: String): Unit = {
     val newBranchFile = rootPath + "/.sgit/branchs/" + branchName
-    FileManager.createFileOrDirectory(newBranchFile, false)
-    val lastCommit = FileManager.readFile(rootPath + "/.sgit/REF")
-    FileManager.writeFile(newBranchFile, lastCommit)
-    FileManager.writeFile(rootPath + "/.sgit/HEAD", branchName)
+    if (new File(newBranchFile).exists()) {
+      MessagePrinter.printSimpleMessage(Console.RED, "Branch already exists")
+    } else {
+      FileManager.createFileOrDirectory(newBranchFile, false)
+      val lastCommit = FileManager.readFile(rootPath + "/.sgit/REF")
+      FileManager.writeFile(newBranchFile, lastCommit)
+      FileManager.writeFile(rootPath + "/.sgit/HEAD", branchName)
+    }
   }
 
-  def checkout(rootPath: String, name: String): Unit = {
+  def checkout(rootPath: String, name: String, wd: WorkingDirectory): Unit = {
     val commit = FileTools.findCommit(rootPath, name)
     commit match {
       case Some(commit) => {
-        FileUtils.cleanDirectory(new File(rootPath));
-        FileTools.checkoutFromCommit(rootPath, commit)
-        FileManager.writeFile(rootPath + "/.sgit/REF", commit.getName)
+        val sha1Commit = commit.getName
+        val sha1Stage =
+          DigestUtils.sha1Hex(FileManager.readFile(rootPath + "/.sgit/STAGE"))
+        if (sha1Stage == sha1Commit) {
+          val untrackedFiles = wd.getUntrackedFiles
+          FileManager.cleanDirectory(rootPath);
+          FileTools.checkoutFromCommit(rootPath, commit)
+          FileManager.writeFile(rootPath + "/.sgit/REF", sha1Commit)
+          untrackedFiles.foreach(
+            f => FileManager.createFileOrDirectory(f.getCanonicalPath, false)
+          )
+        } else {
+          MessagePrinter.printSimpleMessage(
+            Console.RED,
+            "Stage and last commit different, please commit before checkout"
+          )
+        }
       }
       case None =>
-        println(Console.RED + "No tag/branch/commit with this name : " + name)
+        MessagePrinter.printSimpleMessage(
+          Console.RED,
+          s"No tag/branch/commit with this name : ${name}"
+        )
     }
   }
 
   def newTag(rootPath: String, tagName: String): Unit = {
     val newTagFile = rootPath + "/.sgit/tags/" + tagName
-    FileManager.createFileOrDirectory(newTagFile, false)
-    val lastCommit = FileManager.readFile(rootPath + "/.sgit/REF")
-    FileManager.writeFile(newTagFile, lastCommit)
+    if (new File(newTagFile).exists()) {
+      MessagePrinter.printSimpleMessage(Console.RED, "Tag already exists")
+    } else {
+      FileManager.createFileOrDirectory(newTagFile, false)
+      val lastCommit = FileManager.readFile(rootPath + "/.sgit/REF")
+      FileManager.writeFile(newTagFile, lastCommit)
+    }
   }
 
   def merge: Unit = {}
