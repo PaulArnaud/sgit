@@ -1,7 +1,7 @@
 package sgit
 
 import java.io.File
-import java.awt.Color
+import sgit.sgitTrait._
 
 object MessagePrinter {
 
@@ -25,6 +25,17 @@ object MessagePrinter {
 
   def printlog(color: String, logContent: String): Unit = {
     logContent.split("\n").reverse.foreach(s => println(color + s))
+  }
+
+  def things[T](
+      color: String,
+      label: String,
+      list: Seq[T with Printable]
+  ): Unit = {
+    if (list.size > 0) {
+      println(label)
+      list.foreach(e => println(s"${color}   ${e.print}"))
+    }
   }
 
 }

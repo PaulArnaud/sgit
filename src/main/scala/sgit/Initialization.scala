@@ -3,6 +3,7 @@ package sgit
 import java.io.File
 import java.io.File.{separator => sep}
 import org.apache.commons.codec.digest.DigestUtils
+import sgit.objects._
 
 object Initialization {
 
@@ -17,9 +18,12 @@ object Initialization {
       })
   }
 
-  def importBlopsFromCommit(rootPath: String, name: String): Array[Blop] = {
+  def importBlopsFromCommit(
+      rootPath: String,
+      commitPath: String
+  ): Array[Blop] = {
     val commit =
-      FileManager.readFile(s"${rootPath}${sep}.sgit${sep}objects${sep}${name}")
+      FileManager.readFile(commitPath)
     commit
       .split("\n")
       .tail //because the first line is the presentation informations
@@ -48,19 +52,17 @@ object Initialization {
   def getLastCommit(rootPath: String): Option[Commit] = {
     val sgit = s"${rootPath}${sep}.sgit${sep}"
     val sha1Commit = FileManager.readFile(s"${sgit}REF")
-    if (sha1Commit == "") {
-      None
-    } else {
-      val commitContent =
-        FileManager.readFile(s"${sgit}objects${sep}${sha1Commit}").split("\n")
+    createCommit(rootPath, s"${sgit}objects${sep}${sha1Commit}")
+  }
+
+  def createCommit(rootPath: String, commitPath: String): Option[Commit] = {
+    if ((FileManager.exists(commitPath)) && !(FileManager
+          .isDirectory(commitPath))) {
+      val commitContent = FileManager
+        .readFile(commitPath)
+        .split("\n")
       val firstLine = commitContent.head.split(" ")
-      val blops =
-        commitContent.tail //because the first line is the presentation informations
-          .map(line => {
-            val name = line.split(" ")(0)
-            val path = line.split(" ")(1)
-            new Blop(name, path)
-          })
+      val blops = importBlopsFromCommit(rootPath, commitPath)
       Some(
         new Commit(
           rootPath,
@@ -71,16 +73,30 @@ object Initialization {
           blops
         )
       )
+    } else {
+      None
     }
+
   }
 
-  def getBranchs(rootPath: String): Array[String] = {
+  def getBranchs(rootPath: String): Array[Branch] = {
     FileTools
       .listFiles(s"${rootPath}${sep}.sgit${sep}branchs")
-      .map(f => f.getName)
+      .map(branch => {
+        val branchPath = branch.getCanonicalPath
+        val commit = createCommit(rootPath, FileManager.readFile(branchPath))
+        new Branch(rootPath, commit)
+      })
   }
 
-  def getTags(rootPath: String): Array[String] = {
-    FileTools.listFiles(s"${rootPath}${sep}.sgit${sep}tags").map(f => f.getName)
+  def getTags(rootPath: String): Array[Tag] = {
+    FileTools
+      .listFiles(s"${rootPath}${sep}.sgit${sep}tags")
+      .map(tag => {
+        val tagPath = tag.getCanonicalPath
+        val commit = createCommit(rootPath, FileManager.readFile(tagPath))
+        new Tag(rootPath, commit)
+      })
   }
+
 }

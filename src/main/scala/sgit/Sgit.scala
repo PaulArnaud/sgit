@@ -1,6 +1,7 @@
 package sgit
 
 import scopt.OParser
+import sgit.objects._
 
 object Sgit {
   def main(args: Array[String]): Unit = {
@@ -117,11 +118,14 @@ object Sgit {
                 val repository = new Repository(rootPath)
                 val wd = new WorkingDirectory(rootPath)
                 config.command match {
+                  case "diff" => {
+                    Command.diff(repository)
+                  }
                   case "add" => {
                     Command.add(rootPath, config.files, wd)
                   }
                   case "status" => {
-                    Command.status(wd)
+                    Command.status(repository)
                   }
                   case "log" => {
                     Command.log(rootPath, config.p, config.stat)

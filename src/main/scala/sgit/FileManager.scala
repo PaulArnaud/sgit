@@ -28,4 +28,12 @@ object FileManager {
   def cleanDirectory(name: String): Unit = {
     name.toFile.clear()
   }
+
+  def exists(path: String): Boolean = {
+    path.toFile.exists
+  }
+
+  def isDirectory(path: String): Boolean = {
+    path.toFile.isDirectory
+  }
 }

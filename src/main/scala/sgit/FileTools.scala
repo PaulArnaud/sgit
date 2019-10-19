@@ -3,6 +3,8 @@ package sgit
 import java.io.File
 import java.io.File.{separator => sep}
 import org.apache.commons.codec.digest.DigestUtils
+import sgit._
+import sgit.objects._
 
 object FileTools {
 
@@ -19,10 +21,6 @@ object FileTools {
     FileManager.createFileOrDirectory(
       s".sgit${sep}branchs${sep}master",
       false
-    )
-    FileManager.writeFile(
-      s".sgit${sep}branchs${sep}master",
-      "INITIAL COMMIT"
     )
   }
 

@@ -1,4 +1,6 @@
-package sgit
+package sgit.objects
+
+import sgit._
 
 case class Commit(
     rootPath: String,

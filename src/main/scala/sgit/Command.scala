@@ -4,6 +4,7 @@ import java.io.File
 import java.io.File.{separator => sep}
 import org.apache.commons.codec.digest.DigestUtils
 import java.time.Instant
+import sgit.objects._
 
 object Command {
 
@@ -11,25 +12,31 @@ object Command {
     FileTools.createRepo
   }
 
-  def status(wd: WorkingDirectory): Unit = {
-    MessagePrinter.printFiles(
-      Console.RED,
-      "Deleted Files",
-      wd.getDeletedFiles
-    )
-    MessagePrinter.printFiles(
-      Console.YELLOW,
-      "Untracked Files",
-      wd.getUntrackedFiles
-    )
-    MessagePrinter.printFiles(
-      Console.BLUE,
-      "Modified Files",
-      wd.getModifiedAndUnmodifiedFiles._2
-    )
+  def status(repository: Repository): Unit = {
+    /*
+    _ Les fichiers qui sont dans le stage mais qui ne sont pas dans le working directory
+    sont les fichiers qui ont été supprimés.
+    _ Les fichiers qui sont dans le stage et dans le working directory sont les fichiers
+    qui sont trackés et non modifiés
+    _ Les fichiers qui ne sont pas dans le stage mais présent dans le working directory
+    sont les fichiers non trackés et les fichiers modifiés
+    _ Pour trouver les fichiers modifiés, il faut regarder les blops commun entre supprimés et non trackés
+    selon le critère path
+     */
+    MessagePrinter.things(Console.RED, "Modified Files:", repository.modified)
+    MessagePrinter.things(Console.RED, "Untracked Files:", repository.untracked)
+    MessagePrinter.things(Console.RED, "Deleted Files:", repository.delete)
   }
 
-  def diff: Unit = {}
+  def diff(repository: Repository): Unit = {
+    if (repository.modified.size != 0) {
+      repository.getDiff.foreach(d => {
+        println("File : " + d._1)
+        println("Line Added : " + d._2.toString)
+        println("Line Deleted : " + d._3.toString)
+      })
+    }
+  }
 
   def add(
       rootPath: String,

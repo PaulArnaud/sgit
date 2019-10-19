@@ -10,7 +10,8 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.github.scopt" %% "scopt" % "4.0.0-RC2",
     libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.8.0",
     libraryDependencies += "commons-codec" % "commons-codec" % "1.13",
-    libraryDependencies += "commons-io" % "commons-io" % "2.6"
+    libraryDependencies += "commons-io" % "commons-io" % "2.6",
+    Test / parallelExecution := false
   )
 
 import sbtassembly.AssemblyPlugin.defaultUniversalScript
