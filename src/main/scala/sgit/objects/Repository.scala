@@ -25,19 +25,17 @@ class Repository(
 ) extends Savable {
 
   val (common, delete, untracked, modified) =
-    Utils.getCDUM(stage.blops, workingDirectory)
+    Utils.getCDUM(workingDirectory, stage.blops)
 
   def getDiff: Seq[(String, Seq[String], Seq[String])] = {
-    modified.map(blop => {
-      val wdFile = FileManager.readFile(blop.filePath).split("\n")
-      val stageFile = FileManager
-        .readFile(s"${rootPath}${sep}.sgit${sep}objects${sep}${blop.sha1}")
-        .split("\n")
-      val lcs = LCS.lcsDP(wdFile, stageFile)
-      val linesAdded = wdFile.diff(lcs)
-      val linesDeleted = stageFile.diff(lcs)
-      (blop.filePath, linesAdded, linesDeleted)
-    })
+    FileTools
+      .getContentFileFromBlop(rootPath, modified)
+      .map( tuple => {
+        val lcs = LCS.lcsDP(tuple._2, tuple._3)
+        val linesAdded = tuple._2.diff(lcs)
+        val linesDeleted = tuple._3.diff(lcs)
+        (tuple._1, linesAdded, linesDeleted)
+      })
   }
 
   def save(rootPath: String): Unit = {
@@ -45,7 +43,13 @@ class Repository(
     FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}HEAD", head)
     lastCommit match {
       case None        =>
-      case Some(value) => value.save(rootPath)
+      case Some(value) => {
+        value.save(rootPath)
+        FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}REF", value.name)
+        if (head != "") { // si on est positionné sur une branche 
+          FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}branchs${sep}${head}", value.name)
+        }
+      }
     }
     branchs.foreach(branch => branch.save(rootPath))
     tags.foreach(tag => tag.save(rootPath))

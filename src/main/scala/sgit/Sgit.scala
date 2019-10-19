@@ -142,11 +142,19 @@ object Sgit {
                   case "status" => {
                     Command.status(repository)
                   }
-                  case "log" => {}
-                  case "branch" => {
-                    if (config.av) {} else {}
+                  case "log" => {
+                    Command.log(repository, config.p, config.stat)
                   }
-                  case "tag" => {}
+                  case "branch" => {
+                    if (config.av) {
+                      Command.listTagsAndBranchs(repository)
+                    } else {
+                      Command.newBranch(repository, config.branch_tag_commit)
+                    }
+                  }
+                  case "tag" => {
+                    Command.newTag(repository, config.branch_tag_commit)
+                  }
                   case "commit" => {
                     Command.commit(repository, config.branch_tag_commit)
                   }
@@ -157,7 +165,7 @@ object Sgit {
               }
               case None => {
                 println(
-                  MessagePrinter.printSimpleMessage(
+                  MessagePrinter.printMessage(
                     Console.RED,
                     "No repository found. Please try to initialize one \n--> sgit init"
                   )
@@ -167,7 +175,7 @@ object Sgit {
           }
         }
       }
-      case _ => MessagePrinter.printSimpleMessage(Console.RED, "Sorry")
+      case _ => MessagePrinter.printMessage(Console.RED, "Sorry")
     }
   }
 }

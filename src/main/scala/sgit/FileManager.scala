@@ -12,14 +12,6 @@ object FileManager {
     nameFile.toFile.overwrite(content)
   }
 
-  def addLineInFile(nameFile: String, newLine: String): Unit = {
-    if (readFile(nameFile) == "") {
-      writeFile(nameFile, newLine)
-    } else {
-      nameFile.toFile.appendLine().append(newLine)
-    }
-  }
-
   def readFile(nameFile: String): String = {
     nameFile.toFile.contentAsString
   }

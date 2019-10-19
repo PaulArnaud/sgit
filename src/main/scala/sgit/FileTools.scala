@@ -14,7 +14,6 @@ object FileTools {
     FileManager.createFileOrDirectory(s".sgit${sep}objects", true)
     FileManager.createFileOrDirectory(s".sgit${sep}STAGE", false)
     FileManager.createFileOrDirectory(s".sgit${sep}HEAD", false)
-    FileManager.createFileOrDirectory(s".sgit${sep}LOGS", false)
     FileManager.createFileOrDirectory(s".sgit${sep}REF", false)
     FileManager.writeFile(s".sgit${sep}HEAD", "master")
     FileManager.createFileOrDirectory(
@@ -66,10 +65,13 @@ object FileTools {
     })
   }
 
-  def writeInStage(rootPath: String, stage: Seq[Blop]): Unit = {
-    val stagePath = s"${rootPath}${sep}.sgit${sep}STAGE"
-    val content = stage.map(blop => blop.print).mkString("\n")
-    FileManager.writeFile(stagePath, content)
+  def getContentFileFromBlop(rootPath: String, A: Seq[Blop]): Seq[(String, Seq[String], Seq[String])] = {
+    A.map( blop => {
+      val wdFile = FileManager.readFile(blop.filePath).split("\n")
+      val stageFile = FileManager
+        .readFile(s"${rootPath}${sep}.sgit${sep}objects${sep}${blop.sha1}")
+        .split("\n")
+      (blop.filePath, wdFile, stageFile)
+    })
   }
-
 }

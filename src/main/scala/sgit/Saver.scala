@@ -27,4 +27,24 @@ object Saver {
     FileManager.createFileOrDirectory(commitPath, false)
     FileManager.writeFile(commitPath, s"${firstLine}\n${content}")
   }
+
+  def saveStage(rootPath: String, blops: Seq[Blop]): Unit = {
+      val stagePath = s"${rootPath}${sep}.sgit${sep}STAGE"
+      val stageContent = blops.map( blop => blop.print).mkString("\n")
+      FileManager.writeFile(stagePath, stageContent)
+  }
+
+  def saveTag(rootPath: String, name: String, commit: Option[Commit]): Unit = {
+    val tagPath = s"${rootPath}${sep}.sgit${sep}tags${sep}${name}"
+    val commitName = if (commit.isDefined) commit.get.name else ""
+    FileManager.createFileOrDirectory(tagPath, false)
+    FileManager.writeFile(tagPath, commitName)
+  }
+
+  def saveBranch(rootPath: String, name: String, commit: Option[Commit]): Unit = {
+    val branchPath = s"${rootPath}${sep}.sgit${sep}branchs${sep}${name}"
+    val commitName = if (commit.isDefined) commit.get.name else ""
+    FileManager.createFileOrDirectory(branchPath, false)
+    FileManager.writeFile(branchPath, commitName)
+  }
 }

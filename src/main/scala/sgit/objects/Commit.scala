@@ -14,9 +14,10 @@ case class Commit(
     with Printable {
 
   def print: String = {
-    name
+    s"${name} ${message} ${date}"
   }
   def save(rootPath: String): Unit = {
     Saver.saveCommit(rootPath, name, message, date, father, blops)
   }
+
 }

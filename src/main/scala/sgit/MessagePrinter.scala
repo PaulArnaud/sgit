@@ -1,33 +1,52 @@
 package sgit
 
-import java.io.File
 import sgit.sgitTrait._
+import sgit.objects.Commit
 
 object MessagePrinter {
 
-  def printFiles(color: String, label: String, files: Seq[File]): Unit = {
-    if (files.size != 0) {
-      println(color + label)
-      files.foreach(f => println(color + " -> " + f.getCanonicalPath))
+  def printMessage(color: String, content: String): Unit = {
+    println(s"${color}${content}")
+  }
+  def printSimpleMessage(color: String, label: String, content: String): Unit = {
+    println(s"${color}${label} ${content}")
+  }
+
+  def printDiffMessage(color: String, label: String, content: Seq[String], sign: String): Unit = {
+    if (content.size > 0) {
+      println(Console.WHITE + label)
+      content.foreach(s => println(s"${color} ${sign} ${s}"))
     }
   }
 
-  def printNameFile(color: String, label: String, files: Seq[File]): Unit = {
-    if (files.size != 0) {
-      println(color + label)
-      files.foreach(f => println(color + " -> " + f.getName()))
+  def log(color: String, commit: Option[Commit]): Unit = {
+    commit match {
+      case None => println(s"Initial Commit")
+      case Some(value) => {
+        value.print
+        log(color, value.father)
+      }
     }
   }
 
-  def printSimpleMessage(color: String, messageContent: String): Unit = {
-    println(color + messageContent)
+  def logP(color: String, commit: Option[Commit]): Unit = {
+    commit match {
+      case None => println(s"Initial Commit")
+      case Some(value) => {
+        value.father match {
+          case None => println(s"Initial Commit")
+          case Some(fathervalue) => {
+            val diff = Utils.getCDUM(fathervalue.blops, value.blops)
+            printable(Console.RED, "Modified Files:", diff._4)
+            printable(Console.RED, "Untracked Files:", diff._3)
+            printable(Console.RED, "Deleted Files:", diff._2)
+          }
+        }
+      }
+    }
   }
 
-  def printlog(color: String, logContent: String): Unit = {
-    logContent.split("\n").reverse.foreach(s => println(color + s))
-  }
-
-  def things[T](
+  def printable[T](
       color: String,
       label: String,
       list: Seq[T with Printable]

@@ -40,15 +40,4 @@ class FileManagerTest extends FunSuite {
         new JavaFile("file").delete()
     }
 
-    test("addLineInFile should add a line in the file"){
-        FileManager.createFileOrDirectory("file",false)
-        val string = "first Line of the document\nline added"
-
-        FileManager.writeFile("file", "first Line of the document")
-        FileManager.addLineInFile("file", "line added")
-
-        assert(FileManager.readFile("file") == string)
-        new JavaFile("file").delete()
-    }
-
 }

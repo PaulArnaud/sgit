@@ -15,7 +15,6 @@ class FileToolsTest extends FunSuite {
         val head = new JavaFile(".sgit/HEAD")
         val tags = new JavaFile(".sgit/tags")
         val refs = new JavaFile(".sgit/REF")
-        val logs = new JavaFile(".sgit/LOGS")
         val objects = new JavaFile(".sgit/objects")
         val branches = new JavaFile(".sgit/branchs")
     
@@ -26,7 +25,6 @@ class FileToolsTest extends FunSuite {
         refs should exist
         objects should exist
         branches should exist   
-        logs should exist
         
         sgit.delete()
     }
@@ -57,39 +55,4 @@ class FileToolsTest extends FunSuite {
         new JavaFile("../.anothersgit").delete()
     }
 
-    test("listFilesInDirectory should list all the files in the directory"){
-        pending
-    }
-
-    test("filesFromStage should list the file in the stage"){
-        pending
-    }
-
-    test("sha1FromStage should return the sha1, stored in stage, of the file pass in arg"){
-        pending
-    }
-
-    test("getSHA1"){
-        pending
-    }
-
-    test("findCommit should retrieve the commit with a Name"){
-        pending
-    }
-
-    test("checkoutFromCommit"){
-        pending
-    }
-
-    test("listBranchs"){
-        pending
-    }
-
-    test("listTags"){
-        pending
-    }
-
-    test("createBlop"){
-        pending
-    }
 }

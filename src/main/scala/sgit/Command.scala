@@ -22,17 +22,17 @@ object Command {
     _ Pour trouver les fichiers modifiés, il faut regarder les blops commun entre supprimés et non trackés
     selon le critère path
      */
-    MessagePrinter.things(Console.RED, "Modified Files:", repository.modified)
-    MessagePrinter.things(Console.RED, "Untracked Files:", repository.untracked)
-    MessagePrinter.things(Console.RED, "Deleted Files:", repository.delete)
+    MessagePrinter.printable(Console.RED, "Modified Files:", repository.modified)
+    MessagePrinter.printable(Console.RED, "Untracked Files:", repository.untracked)
+    MessagePrinter.printable(Console.RED, "Deleted Files:", repository.delete)
   }
 
   def diff(repository: Repository): Unit = {
     if (repository.modified.size != 0) {
       repository.getDiff.foreach(d => {
-        println("File : " + d._1)
-        println("Line Added : " + d._2.toString)
-        println("Line Deleted : " + d._3.toString)
+        MessagePrinter.printSimpleMessage(Console.GREEN, "File : ", d._1)
+        MessagePrinter.printDiffMessage(Console.BLUE,"Lines added :", d._2, "+")
+        MessagePrinter.printDiffMessage(Console.RED,"Lines deleted :", d._3, "-")
       })
     }
   }
@@ -126,26 +126,46 @@ object Command {
     ).save(repository.rootPath)
   }
 
+  
+  def log(repository: Repository, p: Boolean, stat: Boolean): Unit = {
+    if (p) {
+      MessagePrinter.logP(Console.YELLOW, repository.lastCommit)
+    } else if (stat) {} else {
+      MessagePrinter.log(Console.YELLOW, repository.lastCommit)
+    }
+  }
+
+  
+  def newBranch(repository: Repository, branchName: String): Unit = {
+    new Repository(
+      repository.rootPath,
+      repository.workingDirectory,
+      repository.stage,
+      repository.head,
+      repository.lastCommit,
+      repository.branchs :+ new Branch(repository.rootPath, branchName, repository.lastCommit),
+      repository.tags
+    ).save(repository.rootPath)
+  }
+
+  def newTag(repository: Repository, tagName: String): Unit = {
+    new Repository(
+      repository.rootPath,
+      repository.workingDirectory,
+      repository.stage,
+      repository.head,
+      repository.lastCommit,
+      repository.branchs,
+      repository.tags :+ new Tag(repository.rootPath, tagName, repository.lastCommit)
+    ).save(repository.rootPath)
+  }
+
+  def listTagsAndBranchs(repository: Repository): Unit = {
+    MessagePrinter.printable(Console.BLUE, "Branchs :", repository.branchs)
+    MessagePrinter.printable(Console.MAGENTA_B, "Tags :", repository.tags)
+  }
+
   /*
-  def log(rootPath: String, p: Boolean, stat: Boolean): Unit = {
-    if (p) {} else if (stat) {} else {
-      val logs = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}LOGS")
-      MessagePrinter.printlog(Console.BLUE_B, logs)
-    }
-  }
-
-  def newBranch(rootPath: String, branchName: String): Unit = {
-    val newBranchFile = s"${rootPath}${sep}.sgit${sep}branchs${sep}" + branchName
-    if (new File(newBranchFile).exists()) {
-      MessagePrinter.printSimpleMessage(Console.RED, "Branch already exists")
-    } else {
-      FileManager.createFileOrDirectory(newBranchFile, false)
-      val lastCommit = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}REF")
-      FileManager.writeFile(newBranchFile, lastCommit)
-      FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}HEAD", branchName)
-    }
-  }
-
   def checkout(rootPath: String, name: String, wd: WorkingDirectory): Unit = {
     val commit = FileTools.findCommit(rootPath, name)
     commit match {
@@ -178,32 +198,9 @@ object Command {
     }
   }
 
-  def newTag(rootPath: String, tagName: String): Unit = {
-    val newTagFile = s"${rootPath}${sep}.sgit${sep}tags${sep}${tagName}"
-    if (new File(newTagFile).exists()) {
-      MessagePrinter.printSimpleMessage(Console.RED, "Tag already exists")
-    } else {
-      FileManager.createFileOrDirectory(newTagFile, false)
-      val lastCommit = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}REF")
-      FileManager.writeFile(newTagFile, lastCommit)
-    }
-  }
-
+  
   def merge: Unit = {}
 
   def rebase: Unit = {}
-
-  def listTagsAndBranch(rootPath: String): Unit = {
-    MessagePrinter.printNameFile(
-      Console.WHITE,
-      "Tags",
-      FileTools.listTags(rootPath)
-    )
-    MessagePrinter.printNameFile(
-      Console.BLUE,
-      "Branchs",
-      FileTools.listBranchs(rootPath)
-    )
-  }
  */
 }

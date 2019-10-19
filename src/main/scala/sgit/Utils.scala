@@ -16,19 +16,33 @@ object Utils {
   }
 
   def pathCorrespondence(A: Seq[Blop], B: Seq[Blop]): Seq[Blop] = {
-    A.filter(blopA => B.map(blopB => blopB.filePath).contains(blopA.filePath))
+    val pathList = B.map(blopB => blopB.filePath)
+    A.filter(blopA => pathList.contains(blopA.filePath))
   }
 
   def getCDUM(
       A: Seq[Blop],
       B: Seq[Blop]
   ): (Seq[Blop], Seq[Blop], Seq[Blop], Seq[Blop]) = {
-    val common = intersection(A, B)
-    val inANotB = difference(A, B)
-    val inBNotA = difference(B, A)
-    val modified = pathCorrespondence(inBNotA, inANotB)
-    val untracked = inBNotA.diff(modified)
-    val deleted = inANotB.diff(modified)
-    (common, deleted, untracked, modified)
+    /* 
+    Si :
+    A = a, b, c, d 
+    B = a', c, d, f
+    common = c, d
+    deleted = f
+    untracked = b
+    modified = a' (remplacé par a)
+    */
+    val common = intersection(A, B) // c,d
+    val inANotB = difference(A, B) // a,b
+    val inBNotA = difference(B, A) // a',f
+
+    val modifiedInA = pathCorrespondence(inANotB, inBNotA) //a'
+    val modifiedInB = pathCorrespondence(inBNotA, inANotB) //a
+
+    val deleted = inBNotA.diff(modifiedInB) // b
+    val untracked = inANotB.diff(modifiedInA)  // f
+
+    (common, deleted, untracked, modifiedInB)
   }
 }

@@ -1,16 +1,17 @@
 package sgit.objects
 
 import sgit.sgitTrait._
+import sgit._
 
-case class Branch(rootPath: String, commit: Option[Commit])
+case class Branch(rootPath: String, name: String, commit: Option[Commit])
     extends Savable
     with Printable {
 
   def print: String = {
-    s"${rootPath}"
+    s"${name}"
   }
 
   def save(rootPath: String) = {
-    //TODO
+    Saver.saveBranch(rootPath, name, commit)
   }
 }

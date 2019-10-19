@@ -22,7 +22,6 @@ object Initialization {
             new Blop(name, path)
           })
       )
-
     }
   }
 
@@ -70,7 +69,7 @@ object Initialization {
         .readFile(commitPath)
         .split("\n")
       val firstLine = commitContent.head.split(" ")
-      val commit = getCommitRec(rootPath, firstLine(3))
+      val commit = getCommitRec(rootPath, if (firstLine.size > 3) firstLine(3) else "")
       val blops = importBlopsFromCommit(rootPath, commitPath)
       Some(
         new Commit(
@@ -85,7 +84,6 @@ object Initialization {
     } else {
       None
     }
-
   }
 
   def getCommitRec(rootPath: String, fatherName: String): Option[Commit] = {
@@ -115,7 +113,7 @@ object Initialization {
       .map(branch => {
         val branchPath = branch.getCanonicalPath
         val commit = createCommit(rootPath, FileManager.readFile(branchPath))
-        new Branch(rootPath, commit)
+        new Branch(rootPath, branch.getName, commit)
       })
   }
 
@@ -125,7 +123,7 @@ object Initialization {
       .map(tag => {
         val tagPath = tag.getCanonicalPath
         val commit = createCommit(rootPath, FileManager.readFile(tagPath))
-        new Tag(rootPath, commit)
+        new Tag(rootPath, tag.getName, commit)
       })
   }
 
