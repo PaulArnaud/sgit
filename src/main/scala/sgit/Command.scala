@@ -1,9 +1,7 @@
 package sgit
 
 import java.io.File
-import java.io.File.{separator => sep}
 import org.apache.commons.codec.digest.DigestUtils
-import java.time.Instant
 import sgit.objects._
 
 object Command {
@@ -38,11 +36,7 @@ object Command {
     }
   }
 
-  def add(
-      rootPath: String,
-      strings: Array[String],
-      wd: WorkingDirectory
-  ): Unit = {
+  def add(repository: Repository, strings: Seq[String]): Unit = {
     val (files, directorys) =
       strings.map(s => new File(s)).partition(f => f.isFile)
 
@@ -50,24 +44,30 @@ object Command {
       d => FileTools.listFilesInDirectory(d)
     )
 
-    val (inDirectory, outDirectory) = wd.contains(allFiles)
-    MessagePrinter.printFiles(
-      Console.MAGENTA,
-      "Fatal : out of repository",
-      outDirectory
-    )
-
-    inDirectory.foreach(f => {
-      val stageContent =
-        FileManager.readFile(rootPath + "${sep}.sgit${sep}STAGE")
-      if (stageContent.contains(f.getCanonicalPath)) {
-        Stage.update(rootPath, f)
-      } else {
-        Stage.add(rootPath, f)
-      }
+    val (inRepo, outRepo) = allFiles.partition(file => {
+      repository.workingDirectory.map( blop => blop.filePath).contains(file.getCanonicalPath)
     })
+
+    val blops = inRepo.map(file => {
+      val filePath = file.getCanonicalPath
+      val fileContent = FileManager.readFile(filePath)
+      new Blop(DigestUtils.sha1Hex(fileContent), filePath)
+    })
+
+    val newStage = blops.foldLeft(repository.common)( (list, blop) => FileTools.func(repository, list, blop))
+
+    new Repository(
+      repository.rootPath, 
+      repository.workingDirectory,
+      newStage,
+      repository.head,
+      repository.lastCommit,
+      repository.branchs,
+      repository.tags
+      ).save(repository.rootPath)
   }
 
+  /*
   def commit(
       rootPath: String,
       wd: WorkingDirectory,
@@ -112,7 +112,7 @@ object Command {
       ) //mise à jour des logs
     }
   }
-
+  
   def log(rootPath: String, p: Boolean, stat: Boolean): Unit = {
     if (p) {} else if (stat) {} else {
       val logs = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}LOGS")
@@ -191,5 +191,5 @@ object Command {
       FileTools.listBranchs(rootPath)
     )
   }
-
+  */
 }

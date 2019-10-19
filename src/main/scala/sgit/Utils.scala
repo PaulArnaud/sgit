@@ -3,6 +3,10 @@ package sgit
 import sgit.objects.Blop
 object Utils {
 
+  def union[T](A: Seq[T], B: Seq[T]): Seq[T] = {
+    A.union(B)
+  }
+
   def intersection[T](A: Seq[T], B: Seq[T]): Seq[T] = {
     A.intersect(B)
   }

@@ -1,7 +1,6 @@
 package sgit
 
 import better.files._
-import better.files.File._
 
 object FileManager {
 

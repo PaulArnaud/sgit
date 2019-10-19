@@ -14,25 +14,20 @@ object Repository {
 
 }
 
-class Repository(rootPath: String) extends Savable {
-
-  val workingDirectory: Array[Blop] =
-    Initialization.importBlopsInDirectory(rootPath)
-
-  val stage: Array[Blop] = Initialization.importBlopsFromStage(rootPath)
-
-  val head: String = Initialization.getHead(rootPath)
-
-  val lastCommit: Option[Commit] = Initialization.getLastCommit(rootPath)
-
-  val branchs: Array[Branch] = Initialization.getBranchs(rootPath)
-
-  val tags: Array[Tag] = Initialization.getTags(rootPath)
-
+class Repository(
+  val rootPath: String, 
+  val workingDirectory: Seq[Blop],
+  val stage: Seq[Blop],
+  val head: String,
+  val lastCommit: Option[Commit],
+  val branchs: Seq[Branch],
+  val tags: Seq[Tag]
+  ) extends Savable {
+    
   val (common, delete, untracked, modified) =
     Utils.getCDUM(workingDirectory, stage)
 
-  def getDiff: Seq[(String, Array[String], Array[String])] = {
+  def getDiff: Seq[(String, Seq[String], Seq[String])] = {
     modified.map(blop => {
       val wdFile = FileManager.readFile(blop.filePath).split("\n")
       val stageFile = FileManager
@@ -41,9 +36,18 @@ class Repository(rootPath: String) extends Savable {
       val lcs = LCS.lcsDP(wdFile, stageFile)
       val linesAdded = wdFile.diff(lcs)
       val linesDeleted = stageFile.diff(lcs)
-      (blop.filePath, linesAdded, linesAdded)
+      (blop.filePath, linesAdded, linesDeleted)
     })
   }
 
-  def save(rootPath: String): Unit = {}
+  def save(rootPath: String): Unit = {
+    stage.foreach( blop => blop.save(rootPath))
+    FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}HEAD", head)
+    lastCommit match {
+      case None => 
+      case Some(value) => value.save(rootPath)
+    }
+    branchs.foreach( branch => branch.save(rootPath))
+    tags.foreach( tag => tag.save(rootPath))
+  }
 }

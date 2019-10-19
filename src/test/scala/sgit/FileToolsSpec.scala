@@ -4,7 +4,6 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 import java.io.{File => JavaFile}
 import better.files._
-import better.files.File._
 
 class FileToolsTest extends FunSuite {
 

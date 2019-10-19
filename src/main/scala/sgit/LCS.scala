@@ -1,7 +1,5 @@
 package sgit
 
-import scala.math.max
-
 object LCS {
 
   /* https://rosettacode.org/wiki/Longest_common_subsequence#Scala */
@@ -21,9 +19,6 @@ object LCS {
     if (s1 == null || s1.size == 0 || s2 == null || s2.size == 0) Seq()
     else if (s1 == s2) s1
     else {
-      val up = 1
-      val left = 2
-      val charMatched = 3
 
       val s1Length = s1.size
       val s2Length = s2.size

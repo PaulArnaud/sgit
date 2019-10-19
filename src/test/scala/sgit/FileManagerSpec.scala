@@ -4,7 +4,6 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 import java.io.{File => JavaFile}
 import better.files._
-import better.files.File._
 
 class FileManagerTest extends FunSuite {
     
@@ -48,7 +47,6 @@ class FileManagerTest extends FunSuite {
         FileManager.writeFile("file", "first Line of the document")
         FileManager.addLineInFile("file", "line added")
 
-        val content = FileManager.readFile("file")
         assert(FileManager.readFile("file") == string)
         new JavaFile("file").delete()
     }

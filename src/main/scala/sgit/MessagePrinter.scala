@@ -5,14 +5,14 @@ import sgit.sgitTrait._
 
 object MessagePrinter {
 
-  def printFiles(color: String, label: String, files: Array[File]): Unit = {
+  def printFiles(color: String, label: String, files: Seq[File]): Unit = {
     if (files.size != 0) {
       println(color + label)
       files.foreach(f => println(color + " -> " + f.getCanonicalPath))
     }
   }
 
-  def printNameFile(color: String, label: String, files: Array[File]): Unit = {
+  def printNameFile(color: String, label: String, files: Seq[File]): Unit = {
     if (files.size != 0) {
       println(color + label)
       files.foreach(f => println(color + " -> " + f.getName()))

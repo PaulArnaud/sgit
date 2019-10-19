@@ -7,21 +7,25 @@ import sgit.objects._
 
 object Initialization {
 
-  def importBlopsFromStage(rootPath: String): Array[Blop] = {
+  def importBlopsFromStage(rootPath: String): Seq[Blop] = {
     val stage = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}STAGE")
-    stage
+    if (stage == "") {
+      Seq()
+    } else {
+      stage
       .split("\n")
       .map(line => {
         val name = line.split(" ")(0)
         val path = line.split(" ")(1)
         new Blop(name, path)
       })
+    }
   }
 
   def importBlopsFromCommit(
       rootPath: String,
       commitPath: String
-  ): Array[Blop] = {
+  ): Seq[Blop] = {
     val commit =
       FileManager.readFile(commitPath)
     commit
@@ -34,7 +38,7 @@ object Initialization {
       })
   }
 
-  def importBlopsInDirectory(rootPath: String): Array[Blop] = {
+  def importBlopsInDirectory(rootPath: String): Seq[Blop] = {
     val rootDir = new File(rootPath)
     FileTools
       .listFilesInDirectory(rootDir)
@@ -79,7 +83,7 @@ object Initialization {
 
   }
 
-  def getBranchs(rootPath: String): Array[Branch] = {
+  def getBranchs(rootPath: String): Seq[Branch] = {
     FileTools
       .listFiles(s"${rootPath}${sep}.sgit${sep}branchs")
       .map(branch => {
@@ -89,7 +93,7 @@ object Initialization {
       })
   }
 
-  def getTags(rootPath: String): Array[Tag] = {
+  def getTags(rootPath: String): Seq[Tag] = {
     FileTools
       .listFiles(s"${rootPath}${sep}.sgit${sep}tags")
       .map(tag => {

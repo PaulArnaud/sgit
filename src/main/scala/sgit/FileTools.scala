@@ -40,21 +40,21 @@ object FileTools {
     }
   }
 
-  def listFilesInDirectory(root: File): Array[File] = {
+  def listFilesInDirectory(root: File): Seq[File] = {
     val (directory, files) = root.listFiles.partition(e => e.isDirectory)
     return files ++ directory
       .filter(c => c.getName != ".sgit")
       .flatMap(d => listFilesInDirectory(d))
   }
 
-  def filesFromStage(rootPath: String): Array[File] = {
+  def filesFromStage(rootPath: String): Seq[File] = {
     val stageContent = FileManager
       .readFile(s"${rootPath}${sep}.sgit${sep}STAGE")
       .split("\n")
     if (stageContent(0) != "") {
       stageContent.map(s => new File(s.split(" ")(1)))
     } else {
-      Array()
+      Seq()
     }
   }
 
@@ -88,8 +88,8 @@ object FileTools {
   }
 
   def checkoutFromCommit(rootPath: String, commit: File): Unit = {
-    val commitContent = FileManager.readFile(commit.getCanonicalPath)
-    val files = commitContent
+    FileManager
+      .readFile(commit.getCanonicalPath)
       .split("\n")
       .tail
       .foreach(l => {
@@ -104,13 +104,13 @@ object FileTools {
       })
   }
 
-  def listBranchs(rootPath: String): Array[File] = {
+  def listBranchs(rootPath: String): Seq[File] = {
     new File(
       s"${rootPath}${sep}.sgit${sep}branchs"
     ).listFiles
   }
 
-  def listTags(rootPath: String): Array[File] = {
+  def listTags(rootPath: String): Seq[File] = {
     new File(s"${rootPath}${sep}.sgit${sep}tags").listFiles
   }
 
@@ -149,11 +149,26 @@ object FileTools {
       message: String,
       date: String,
       father: String,
-      blops: Array[Blop]
+      blops: Seq[Blop]
   ): Unit = {}
 
-  def listFiles(dirPath: String): Array[File] = {
+  def listFiles(dirPath: String): Seq[File] = {
     new File(dirPath).listFiles
+  }
+
+  def func(repository: Repository, blops: Seq[Blop], blop: Blop): Seq[Blop] = {
+    val b = Seq(blop)
+    repository.common ++ repository.delete.intersect(b) ++ repository.untracked.intersect(b) ++ modified(repository.modified, blop)
+  }
+
+  def modified(list: Seq[Blop], blop: Blop): Seq[Blop] = {
+    list.map( b => {
+      if (b.filePath == blop.filePath) {
+        blop
+      } else {
+        b
+      }
+    })
   }
 
 }

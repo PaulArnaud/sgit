@@ -4,11 +4,11 @@ import scopt.OParser
 import sgit.objects._
 
 object Sgit {
-  def main(args: Array[String]): Unit = {
+  def main(args: Seq[String]): Unit = {
 
     case class Config(
         command: String = "",
-        files: Array[String] = Array(),
+        files: Seq[String] = Seq(),
         p: Boolean = false,
         stat: Boolean = false,
         branch_tag_commit: String = "",
@@ -115,33 +115,36 @@ object Sgit {
             Repository.getRoot match {
               case Some(root) => {
                 val rootPath = root.getParentFile.getCanonicalPath
-                val repository = new Repository(rootPath)
-                val wd = new WorkingDirectory(rootPath)
+                val workingDirectory: Seq[Blop] = Initialization.importBlopsInDirectory(rootPath)
+                val stage: Seq[Blop] = Initialization.importBlopsFromStage(rootPath)
+                val head: String = Initialization.getHead(rootPath)
+                val lastCommit: Option[Commit] = Initialization.getLastCommit(rootPath)
+                val branchs: Seq[Branch] = Initialization.getBranchs(rootPath)
+                val tags: Seq[Tag] = Initialization.getTags(rootPath)
+                val repository = new Repository(rootPath, workingDirectory, stage, head, lastCommit, branchs, tags)
                 config.command match {
                   case "diff" => {
                     Command.diff(repository)
                   }
                   case "add" => {
-                    Command.add(rootPath, config.files, wd)
+                    Command.add(repository, config.files)
                   }
                   case "status" => {
                     Command.status(repository)
                   }
                   case "log" => {
-                    Command.log(rootPath, config.p, config.stat)
                   }
                   case "branch" => {
                     if (config.av) {
-                      Command.listTagsAndBranch(rootPath)
                     } else {
-                      Command.newBranch(rootPath, config.branch_tag_commit)
                     }
                   }
                   case "tag" => {
-                    Command.newTag(rootPath, config.branch_tag_commit)
                   }
                   case "commit" => {
-                    Command.commit(rootPath, wd, config.branch_tag_commit)
+                  }
+                  case _ => {
+                    println("Error : command not found")
                   }
                 }
               }

@@ -1,9 +1,15 @@
 package sgit.objects
 
-case class Tag(rootPath: String, commit: Option[Commit]) {
+import sgit.sgitTrait._
 
-  def print: String = ???
+case class Tag(rootPath: String, commit: Option[Commit]) extends Savable with Printable {
 
-  def save(rootPath: String) = ???
+  def print: String = {
+    rootPath
+  }
+
+  def save(rootPath: String): Unit = {
+
+  }
 
 }

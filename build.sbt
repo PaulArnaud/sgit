@@ -3,6 +3,8 @@ import Dependencies._
 ThisBuild / scalaVersion     := "2.13.0"
 ThisBuild / organization     := "com.sgit"
 
+scalacOptions ++= Seq("-Xlint:unused")
+
 lazy val root = (project in file("."))
   .settings(
     name := "sgit",
