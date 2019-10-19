@@ -28,6 +28,7 @@ object Utils {
     val inBNotA = difference(B, A)
     val modified = pathCorrespondence(inBNotA, inANotB)
     val untracked = inBNotA.diff(modified)
-    (common, inANotB, untracked, modified)
+    val deleted = inANotB.diff(modified)
+    (common, deleted, untracked, modified)
   }
 }

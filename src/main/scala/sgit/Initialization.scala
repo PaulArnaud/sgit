@@ -7,18 +7,22 @@ import sgit.objects._
 
 object Initialization {
 
-  def importBlopsFromStage(rootPath: String): Seq[Blop] = {
+  def importStage(rootPath: String): Stage = {
     val stage = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}STAGE")
     if (stage == "") {
-      Seq()
+      new Stage("", Seq())
     } else {
-      stage
-      .split("\n")
-      .map(line => {
-        val name = line.split(" ")(0)
-        val path = line.split(" ")(1)
-        new Blop(name, path)
-      })
+      new Stage(
+        DigestUtils.sha1Hex(stage),
+        stage
+          .split("\n")
+          .map(line => {
+            val name = line.split(" ")(0)
+            val path = line.split(" ")(1)
+            new Blop(name, path)
+          })
+      )
+
     }
   }
 
@@ -66,6 +70,7 @@ object Initialization {
         .readFile(commitPath)
         .split("\n")
       val firstLine = commitContent.head.split(" ")
+      val commit = getCommitRec(rootPath, firstLine(3))
       val blops = importBlopsFromCommit(rootPath, commitPath)
       Some(
         new Commit(
@@ -73,7 +78,7 @@ object Initialization {
           firstLine(0),
           firstLine(1),
           firstLine(2),
-          firstLine(3),
+          commit,
           blops
         )
       )
@@ -81,6 +86,27 @@ object Initialization {
       None
     }
 
+  }
+
+  def getCommitRec(rootPath: String, fatherName: String): Option[Commit] = {
+    if (fatherName == "") {
+      None
+    } else {
+      val fatherPath = s"${rootPath}${sep}.sgit${sep}objects${sep}${fatherName}"
+      val fatherCommit = FileManager.readFile(fatherPath).split("\n")
+      val firstLine = fatherCommit.head.split(" ")
+      val blops = importBlopsFromCommit(rootPath, fatherPath)
+      Some(
+        new Commit(
+          rootPath,
+          firstLine(0),
+          firstLine(1),
+          firstLine(2),
+          getCommitRec(rootPath, firstLine(3)),
+          blops
+        )
+      )
+    }
   }
 
   def getBranchs(rootPath: String): Seq[Branch] = {

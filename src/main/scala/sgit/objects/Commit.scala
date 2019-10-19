@@ -8,14 +8,15 @@ case class Commit(
     name: String,
     message: String,
     date: String,
-    father: String,
+    father: Option[Commit],
     blops: Seq[Blop]
-) extends Savable with Printable {
+) extends Savable
+    with Printable {
 
   def print: String = {
     name
   }
   def save(rootPath: String): Unit = {
-    FileTools.saveCommit(rootPath, name, message, date, father, blops)
+    Saver.saveCommit(rootPath, name, message, date, father, blops)
   }
 }

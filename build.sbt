@@ -1,5 +1,3 @@
-import Dependencies._
-
 ThisBuild / scalaVersion     := "2.13.0"
 ThisBuild / organization     := "com.sgit"
 
@@ -8,7 +6,7 @@ scalacOptions ++= Seq("-Xlint:unused")
 lazy val root = (project in file("."))
   .settings(
     name := "sgit",
-    libraryDependencies += scalaTest % Test,
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8",
     libraryDependencies += "com.github.scopt" %% "scopt" % "4.0.0-RC2",
     libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.8.0",
     libraryDependencies += "commons-codec" % "commons-codec" % "1.13",

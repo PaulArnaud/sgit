@@ -15,17 +15,17 @@ object Repository {
 }
 
 class Repository(
-  val rootPath: String, 
-  val workingDirectory: Seq[Blop],
-  val stage: Seq[Blop],
-  val head: String,
-  val lastCommit: Option[Commit],
-  val branchs: Seq[Branch],
-  val tags: Seq[Tag]
-  ) extends Savable {
-    
+    val rootPath: String,
+    val workingDirectory: Seq[Blop],
+    val stage: Stage,
+    val head: String,
+    val lastCommit: Option[Commit],
+    val branchs: Seq[Branch],
+    val tags: Seq[Tag]
+) extends Savable {
+
   val (common, delete, untracked, modified) =
-    Utils.getCDUM(workingDirectory, stage)
+    Utils.getCDUM(stage.blops, workingDirectory)
 
   def getDiff: Seq[(String, Seq[String], Seq[String])] = {
     modified.map(blop => {
@@ -41,13 +41,13 @@ class Repository(
   }
 
   def save(rootPath: String): Unit = {
-    stage.foreach( blop => blop.save(rootPath))
+    stage.save(rootPath)
     FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}HEAD", head)
     lastCommit match {
-      case None => 
+      case None        =>
       case Some(value) => value.save(rootPath)
     }
-    branchs.foreach( branch => branch.save(rootPath))
-    tags.foreach( tag => tag.save(rootPath))
+    branchs.foreach(branch => branch.save(rootPath))
+    tags.foreach(tag => tag.save(rootPath))
   }
 }

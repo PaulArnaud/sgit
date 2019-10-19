@@ -3,6 +3,7 @@ package sgit
 import java.io.File
 import org.apache.commons.codec.digest.DigestUtils
 import sgit.objects._
+import java.time.LocalDate
 
 object Command {
 
@@ -37,82 +38,95 @@ object Command {
   }
 
   def add(repository: Repository, strings: Seq[String]): Unit = {
-    val (files, directorys) =
-      strings.map(s => new File(s)).partition(f => f.isFile)
+    // On vérifie si les paramètres entrés sont des fichiers existants
+    val trueFile = strings.filter(s => new File(s).exists)
 
+    // On sépare les fichiers des dossiers
+    val (files, directorys) =
+      trueFile.map(s => new File(s)).partition(f => f.isFile)
+
+    // On va chercher tous les fichiers dans les dossiers
     val allFiles = files ++ directorys.flatMap(
       d => FileTools.listFilesInDirectory(d)
     )
 
+    // On regarde si les fichiers sont bien dans le dépot git
     val (inRepo, outRepo) = allFiles.partition(file => {
-      repository.workingDirectory.map( blop => blop.filePath).contains(file.getCanonicalPath)
+      repository.workingDirectory
+        .map(blop => blop.filePath)
+        .contains(file.getCanonicalPath)
     })
 
+    // On crée les blops qui correspondent aux fichiers
     val blops = inRepo.map(file => {
       val filePath = file.getCanonicalPath
       val fileContent = FileManager.readFile(filePath)
       new Blop(DigestUtils.sha1Hex(fileContent), filePath)
     })
 
-    val newStage = blops.foldLeft(repository.common)( (list, blop) => FileTools.func(repository, list, blop))
+    // On crée le nouveau STAGE
+    val newStageContent = blops.foldLeft(repository.common)(
+      (list, blop) => FileTools.func(repository, list, blop)
+    )
+    val sha1Stage =
+      DigestUtils.sha1Hex(newStageContent.map(b => b.print).mkString("\n"))
 
+    // On met à jour le répertoire complet
     new Repository(
-      repository.rootPath, 
+      repository.rootPath,
       repository.workingDirectory,
-      newStage,
+      new Stage(sha1Stage, newStageContent),
       repository.head,
       repository.lastCommit,
       repository.branchs,
       repository.tags
-      ).save(repository.rootPath)
+    ).save(repository.rootPath)
   }
 
-  /*
-  def commit(
-      rootPath: String,
-      wd: WorkingDirectory,
-      commitName: String
-  ): Unit = {
-    val stageContent =
-      FileManager.readFile(s"${rootPath}${sep}.sgit${sep}STAGE")
-    val sha1stage = DigestUtils.sha1Hex(stageContent).toString
-    val lastCommit = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}REF")
-    /*val lastCommit = FileManager.readFile(
-      rootPath + "/.sgit/branchs/" + FileManager
-        .readFile(rootPath + "/.sgit/HEAD")
-    )*/
-
-    if (sha1stage == lastCommit) {
-      MessagePrinter.printSimpleMessage(Console.WHITE, "Nothing to commit")
-    } else {
-      val fileName = s"${rootPath}${sep}.sgit${sep}objects${sep}${sha1stage}"
-      val commitFirstLine = sha1stage + " " + commitName + " " + Instant.now.toString + " " + lastCommit + "\n"
-      val actualBranch = FileTools.getBranch(rootPath)
-      actualBranch match {
-        case Some(value) => {
-          FileManager.writeFile(
-            s"${rootPath}${sep}.sgit${sep}branchs${sep}${actualBranch}",
-            sha1stage
-          ) //mise à jour de la branche
-        }
-        case None => {
-          FileManager.writeFile(
-            s"${rootPath}${sep}.sgit${sep}HEAD",
-            sha1stage
+  def commit(repository: Repository, message: String): Unit = {
+    var newCommit: Option[Commit] = null
+    repository.lastCommit match {
+      case None => {
+        newCommit = Some(
+          new Commit(
+            repository.rootPath,
+            repository.stage.sha1,
+            message,
+            LocalDate.now.toString,
+            None,
+            repository.stage.blops
+          )
+        )
+      }
+      case Some(value) => {
+        if (value.name != repository.stage.sha1) {
+          newCommit = Some(
+            new Commit(
+              repository.rootPath,
+              repository.stage.sha1,
+              message,
+              LocalDate.now.toString,
+              Some(value),
+              repository.stage.blops
+            )
           )
         }
       }
-
-      FileManager.createFileOrDirectory(fileName, false) //creation de l'object commit
-      FileManager.writeFile(fileName, commitFirstLine + stageContent) //application du contenu dans ce commit
-      FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}REF", sha1stage) //mise à jour de la référence du dernier commit
-      FileManager.addLineInFile(
-        s"${rootPath}${sep}.sgit${sep}LOGS",
-        commitFirstLine
-      ) //mise à jour des logs
     }
+
+    // On met à jour le répertoire complet
+    new Repository(
+      repository.rootPath,
+      repository.workingDirectory,
+      repository.stage,
+      repository.head,
+      if (newCommit == null) repository.lastCommit else newCommit,
+      repository.branchs,
+      repository.tags
+    ).save(repository.rootPath)
   }
-  
+
+  /*
   def log(rootPath: String, p: Boolean, stat: Boolean): Unit = {
     if (p) {} else if (stat) {} else {
       val logs = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}LOGS")
@@ -191,5 +205,5 @@ object Command {
       FileTools.listBranchs(rootPath)
     )
   }
-  */
+ */
 }

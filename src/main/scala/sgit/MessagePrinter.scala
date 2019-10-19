@@ -33,7 +33,7 @@ object MessagePrinter {
       list: Seq[T with Printable]
   ): Unit = {
     if (list.size > 0) {
-      println(label)
+      println(Console.WHITE + label)
       list.foreach(e => println(s"${color}   ${e.print}"))
     }
   }

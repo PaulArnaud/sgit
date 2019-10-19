@@ -6,7 +6,11 @@ case class Branch(rootPath: String, commit: Option[Commit])
     extends Savable
     with Printable {
 
-  def print: String = ???
+  def print: String = {
+    s"${rootPath}"
+  }
 
-  def save(rootPath: String) = ???
+  def save(rootPath: String) = {
+    //TODO
+  }
 }

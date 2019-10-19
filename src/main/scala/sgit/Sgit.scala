@@ -4,7 +4,7 @@ import scopt.OParser
 import sgit.objects._
 
 object Sgit {
-  def main(args: Seq[String]): Unit = {
+  def main(args: Array[String]): Unit = {
 
     case class Config(
         command: String = "",
@@ -115,13 +115,23 @@ object Sgit {
             Repository.getRoot match {
               case Some(root) => {
                 val rootPath = root.getParentFile.getCanonicalPath
-                val workingDirectory: Seq[Blop] = Initialization.importBlopsInDirectory(rootPath)
-                val stage: Seq[Blop] = Initialization.importBlopsFromStage(rootPath)
+                val workingDirectory: Seq[Blop] =
+                  Initialization.importBlopsInDirectory(rootPath)
+                val stage: Stage = Initialization.importStage(rootPath)
                 val head: String = Initialization.getHead(rootPath)
-                val lastCommit: Option[Commit] = Initialization.getLastCommit(rootPath)
+                val lastCommit: Option[Commit] =
+                  Initialization.getLastCommit(rootPath)
                 val branchs: Seq[Branch] = Initialization.getBranchs(rootPath)
                 val tags: Seq[Tag] = Initialization.getTags(rootPath)
-                val repository = new Repository(rootPath, workingDirectory, stage, head, lastCommit, branchs, tags)
+                val repository = new Repository(
+                  rootPath,
+                  workingDirectory,
+                  stage,
+                  head,
+                  lastCommit,
+                  branchs,
+                  tags
+                )
                 config.command match {
                   case "diff" => {
                     Command.diff(repository)
@@ -132,16 +142,13 @@ object Sgit {
                   case "status" => {
                     Command.status(repository)
                   }
-                  case "log" => {
-                  }
+                  case "log" => {}
                   case "branch" => {
-                    if (config.av) {
-                    } else {
-                    }
+                    if (config.av) {} else {}
                   }
-                  case "tag" => {
-                  }
+                  case "tag" => {}
                   case "commit" => {
+                    Command.commit(repository, config.branch_tag_commit)
                   }
                   case _ => {
                     println("Error : command not found")
