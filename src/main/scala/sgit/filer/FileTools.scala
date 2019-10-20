@@ -2,7 +2,7 @@ package sgit
 
 import java.io.File
 import java.io.File.{separator => sep}
-import sgit._
+import sgit.filer._
 import sgit.objects._
 
 object FileTools {

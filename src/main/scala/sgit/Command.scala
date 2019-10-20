@@ -1,6 +1,7 @@
 package sgit
 
 import sgit.objects._
+import sgit.filer._
 import java.time.LocalDate
 import org.apache.commons.codec.digest.DigestUtils
 

@@ -4,6 +4,7 @@ import java.io.File
 import java.io.File.{separator => sep}
 import org.apache.commons.codec.digest.DigestUtils
 import sgit.objects._
+import sgit.filer._
 
 object Initialization {
 

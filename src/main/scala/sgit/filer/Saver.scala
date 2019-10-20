@@ -2,6 +2,7 @@ package sgit
 
 import java.io.File.{separator => sep}
 import sgit.objects._
+import sgit.filer._
 
 object Saver {
 

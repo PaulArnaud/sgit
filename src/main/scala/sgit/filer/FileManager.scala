@@ -1,4 +1,4 @@
-package sgit
+package sgit.filer
 
 import better.files._
 
