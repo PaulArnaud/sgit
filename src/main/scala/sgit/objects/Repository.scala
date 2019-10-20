@@ -3,7 +3,6 @@ package sgit.objects
 import java.io.File
 import sgit._
 import sgit.sgitTrait._
-import java.io.File.{separator => sep}
 
 object Repository {
 
@@ -30,7 +29,7 @@ class Repository(
   def getDiff: Seq[(String, Seq[String], Seq[String])] = {
     FileTools
       .getContentFileFromBlop(rootPath, modified)
-      .map( tuple => {
+      .map(tuple => {
         val lcs = LCS.lcsDP(tuple._2, tuple._3)
         val linesAdded = tuple._2.diff(lcs)
         val linesDeleted = tuple._3.diff(lcs)
@@ -39,19 +38,7 @@ class Repository(
   }
 
   def save(rootPath: String): Unit = {
-    stage.save(rootPath)
-    FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}HEAD", head)
-    lastCommit match {
-      case None        =>
-      case Some(value) => {
-        value.save(rootPath)
-        FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}REF", value.name)
-        if (head != "") { // si on est positionné sur une branche 
-          FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}branchs${sep}${head}", value.name)
-        }
-      }
-    }
-    branchs.foreach(branch => branch.save(rootPath))
-    tags.foreach(tag => tag.save(rootPath))
+    Saver.saveRepository(rootPath, this)
   }
+
 }

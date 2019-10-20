@@ -3,7 +3,7 @@ package sgit.objects
 import sgit.sgitTrait._
 import sgit._
 
-case class Branch(rootPath: String, name: String, commit: Option[Commit])
+case class Branch(name: String, commit: String)
     extends Savable
     with Printable {
 
@@ -11,7 +11,7 @@ case class Branch(rootPath: String, name: String, commit: Option[Commit])
     s"${name}"
   }
 
-  def save(rootPath: String) = {
+  def save(rootPath: String): Unit = {
     Saver.saveBranch(rootPath, name, commit)
   }
 }

@@ -24,15 +24,15 @@ object Utils {
       A: Seq[Blop],
       B: Seq[Blop]
   ): (Seq[Blop], Seq[Blop], Seq[Blop], Seq[Blop]) = {
-    /* 
+    /*
     Si :
-    A = a, b, c, d 
+    A = a, b, c, d
     B = a', c, d, f
     common = c, d
     deleted = f
     untracked = b
     modified = a' (remplacé par a)
-    */
+     */
     val common = intersection(A, B) // c,d
     val inANotB = difference(A, B) // a,b
     val inBNotA = difference(B, A) // a',f
@@ -41,7 +41,7 @@ object Utils {
     val modifiedInB = pathCorrespondence(inBNotA, inANotB) //a
 
     val deleted = inBNotA.diff(modifiedInB) // b
-    val untracked = inANotB.diff(modifiedInA)  // f
+    val untracked = inANotB.diff(modifiedInA) // f
 
     (common, deleted, untracked, modifiedInB)
   }

@@ -29,22 +29,45 @@ object Saver {
   }
 
   def saveStage(rootPath: String, blops: Seq[Blop]): Unit = {
-      val stagePath = s"${rootPath}${sep}.sgit${sep}STAGE"
-      val stageContent = blops.map( blop => blop.print).mkString("\n")
-      FileManager.writeFile(stagePath, stageContent)
+    blops.foreach(blop => blop.save(rootPath))
+    val stagePath = s"${rootPath}${sep}.sgit${sep}STAGE"
+    val stageContent = blops.map(blop => blop.print).mkString("\n")
+    FileManager.writeFile(stagePath, stageContent)
   }
 
-  def saveTag(rootPath: String, name: String, commit: Option[Commit]): Unit = {
+  def saveTag(rootPath: String, name: String, commit: String): Unit = {
     val tagPath = s"${rootPath}${sep}.sgit${sep}tags${sep}${name}"
-    val commitName = if (commit.isDefined) commit.get.name else ""
     FileManager.createFileOrDirectory(tagPath, false)
-    FileManager.writeFile(tagPath, commitName)
+    FileManager.writeFile(tagPath, commit)
   }
 
-  def saveBranch(rootPath: String, name: String, commit: Option[Commit]): Unit = {
+  def saveBranch(
+      rootPath: String,
+      name: String,
+      commit: String
+  ): Unit = {
     val branchPath = s"${rootPath}${sep}.sgit${sep}branchs${sep}${name}"
-    val commitName = if (commit.isDefined) commit.get.name else ""
     FileManager.createFileOrDirectory(branchPath, false)
-    FileManager.writeFile(branchPath, commitName)
+    FileManager.writeFile(branchPath, commit)
+  }
+
+  def saveRepository(rootPath: String, repository: Repository): Unit = {
+    repository.stage.save(repository.rootPath)
+    FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}HEAD", repository.head)
+    repository.lastCommit match {
+      case None =>
+      case Some(value) => {
+        value.save(repository.rootPath)
+        FileManager.writeFile(s"${rootPath}${sep}.sgit${sep}REF", value.name)
+        if (repository.head != "") { // si on est positionné sur une branche
+          FileManager.writeFile(
+            s"${rootPath}${sep}.sgit${sep}branchs${sep}${repository.head}",
+            value.name
+          )
+        }
+      }
+    }
+    repository.branchs.foreach(branch => branch.save(repository.rootPath))
+    repository.tags.foreach(tag => tag.save(repository.rootPath))
   }
 }

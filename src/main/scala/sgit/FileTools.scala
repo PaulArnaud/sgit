@@ -49,29 +49,44 @@ object FileTools {
     new File(dirPath).listFiles
   }
 
-  def func(repository: Repository, blops: Seq[Blop], blop: Blop): Seq[Blop] = {
-    val b = Seq(blop)
-    repository.common ++ repository.delete.intersect(b) ++ repository.untracked
-      .intersect(b) ++ modified(repository.modified, blop)
+  def computeNewStage(repository: Repository, blops: Seq[Blop]): Seq[Blop] = {
+    repository.common ++ repository.delete.diff(blops) ++ repository.untracked
+      .intersect(blops) ++ modified(repository.modified, blops)
   }
 
-  def modified(list: Seq[Blop], blop: Blop): Seq[Blop] = {
-    list.map(b => {
-      if (b.filePath == blop.filePath) {
-        blop
-      } else {
-        b
-      }
-    })
+  def modified(list: Seq[Blop], blops: Seq[Blop]): Seq[Blop] = {
+    if (blops.size != 0) {
+      modified(list.map(b => {
+        if (b.filePath == blops.head.filePath) {
+          blops.head
+        } else {
+          b
+        }
+      }), blops.tail)
+    } else {
+      list
+    }
   }
 
-  def getContentFileFromBlop(rootPath: String, A: Seq[Blop]): Seq[(String, Seq[String], Seq[String])] = {
-    A.map( blop => {
+  def getContentFileFromBlop(
+      rootPath: String,
+      A: Seq[Blop]
+  ): Seq[(String, Seq[String], Seq[String])] = {
+    A.map(blop => {
       val wdFile = FileManager.readFile(blop.filePath).split("\n")
       val stageFile = FileManager
         .readFile(s"${rootPath}${sep}.sgit${sep}objects${sep}${blop.sha1}")
         .split("\n")
       (blop.filePath, wdFile, stageFile)
     })
+  }
+
+  def checkIfExisting(strings: Seq[String]): Seq[File] = {
+    strings.map(s => new File(s)).filter(f => f.exists)
+  }
+
+  def getAllFiles(elements: Seq[File]): Seq[File] = {
+    val (files, directorys) = elements.partition(f => f.isFile)
+    files ++ directorys.flatMap(d => listFilesInDirectory(d))
   }
 }

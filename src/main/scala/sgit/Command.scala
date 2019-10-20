@@ -1,9 +1,8 @@
 package sgit
 
-import java.io.File
-import org.apache.commons.codec.digest.DigestUtils
 import sgit.objects._
 import java.time.LocalDate
+import org.apache.commons.codec.digest.DigestUtils
 
 object Command {
 
@@ -22,8 +21,16 @@ object Command {
     _ Pour trouver les fichiers modifiés, il faut regarder les blops commun entre supprimés et non trackés
     selon le critère path
      */
-    MessagePrinter.printable(Console.RED, "Modified Files:", repository.modified)
-    MessagePrinter.printable(Console.RED, "Untracked Files:", repository.untracked)
+    MessagePrinter.printable(
+      Console.YELLOW,
+      "Modified Files:",
+      repository.modified
+    )
+    MessagePrinter.printable(
+      Console.GREEN,
+      "Untracked Files:",
+      repository.untracked
+    )
     MessagePrinter.printable(Console.RED, "Deleted Files:", repository.delete)
   }
 
@@ -31,24 +38,20 @@ object Command {
     if (repository.modified.size != 0) {
       repository.getDiff.foreach(d => {
         MessagePrinter.printSimpleMessage(Console.GREEN, "File : ", d._1)
-        MessagePrinter.printDiffMessage(Console.BLUE,"Lines added :", d._2, "+")
-        MessagePrinter.printDiffMessage(Console.RED,"Lines deleted :", d._3, "-")
+        MessagePrinter
+          .printDiffMessage(Console.BLUE, "Lines added :", d._2, "+")
+        MessagePrinter
+          .printDiffMessage(Console.RED, "Lines deleted :", d._3, "-")
       })
     }
   }
 
   def add(repository: Repository, strings: Seq[String]): Unit = {
     // On vérifie si les paramètres entrés sont des fichiers existants
-    val trueFile = strings.filter(s => new File(s).exists)
+    val existingFiles = FileTools.checkIfExisting(strings)
 
-    // On sépare les fichiers des dossiers
-    val (files, directorys) =
-      trueFile.map(s => new File(s)).partition(f => f.isFile)
-
-    // On va chercher tous les fichiers dans les dossiers
-    val allFiles = files ++ directorys.flatMap(
-      d => FileTools.listFilesInDirectory(d)
-    )
+    // On trouve tous les fichiers si il y a des dossiers
+    val allFiles = FileTools.getAllFiles(existingFiles)
 
     // On regarde si les fichiers sont bien dans le dépot git
     val (inRepo, outRepo) = allFiles.partition(file => {
@@ -65,53 +68,27 @@ object Command {
     })
 
     // On crée le nouveau STAGE
-    val newStageContent = blops.foldLeft(repository.common)(
-      (list, blop) => FileTools.func(repository, list, blop)
-    )
-    val sha1Stage =
-      DigestUtils.sha1Hex(newStageContent.map(b => b.print).mkString("\n"))
+    val newStageContent = FileTools.computeNewStage(repository, blops)
 
-    // On met à jour le répertoire complet
-    new Repository(
-      repository.rootPath,
-      repository.workingDirectory,
-      new Stage(sha1Stage, newStageContent),
-      repository.head,
-      repository.lastCommit,
-      repository.branchs,
-      repository.tags
-    ).save(repository.rootPath)
+    // On met à jour le stage
+    new Stage(newStageContent).save(repository.rootPath)
   }
 
   def commit(repository: Repository, message: String): Unit = {
     var newCommit: Option[Commit] = null
-    repository.lastCommit match {
-      case None => {
-        newCommit = Some(
-          new Commit(
-            repository.rootPath,
-            repository.stage.sha1,
-            message,
-            LocalDate.now.toString,
-            None,
-            repository.stage.blops
-          )
+
+    if (!(repository.lastCommit.isDefined) || (repository.lastCommit.get.name != repository.stage.sha1)) {
+      newCommit = Some(
+        new Commit(
+          repository.stage.sha1,
+          message.replace(" ","_"),
+          LocalDate.now.toString,
+          repository.lastCommit,
+          repository.stage.blops
         )
-      }
-      case Some(value) => {
-        if (value.name != repository.stage.sha1) {
-          newCommit = Some(
-            new Commit(
-              repository.rootPath,
-              repository.stage.sha1,
-              message,
-              LocalDate.now.toString,
-              Some(value),
-              repository.stage.blops
-            )
-          )
-        }
-      }
+      )
+    } else {
+      newCommit = repository.lastCommit
     }
 
     // On met à jour le répertoire complet
@@ -120,49 +97,51 @@ object Command {
       repository.workingDirectory,
       repository.stage,
       repository.head,
-      if (newCommit == null) repository.lastCommit else newCommit,
+      newCommit,
       repository.branchs,
       repository.tags
     ).save(repository.rootPath)
   }
 
-  
   def log(repository: Repository, p: Boolean, stat: Boolean): Unit = {
     if (p) {
       MessagePrinter.logP(Console.YELLOW, repository.lastCommit)
-    } else if (stat) {} else {
+    } else if (stat) {
+      MessagePrinter.printMessage(Console.RED, "Not implemented yet")
+    } else {
       MessagePrinter.log(Console.YELLOW, repository.lastCommit)
     }
   }
 
-  
   def newBranch(repository: Repository, branchName: String): Unit = {
-    new Repository(
-      repository.rootPath,
-      repository.workingDirectory,
-      repository.stage,
-      repository.head,
-      repository.lastCommit,
-      repository.branchs :+ new Branch(repository.rootPath, branchName, repository.lastCommit),
-      repository.tags
-    ).save(repository.rootPath)
+    repository.lastCommit match {
+      case None => MessagePrinter.printMessage(Console.RED, "No commit")
+      case Some(value) => {
+        if (!repository.branchs.map(branch => branch.name).contains(branchName)) {
+          new Branch(branchName, value.name).save(repository.rootPath)
+        } else {
+          MessagePrinter.printMessage(Console.YELLOW, s"Branch ${branchName} already exists")
+        }
+      }
+    }
   }
 
   def newTag(repository: Repository, tagName: String): Unit = {
-    new Repository(
-      repository.rootPath,
-      repository.workingDirectory,
-      repository.stage,
-      repository.head,
-      repository.lastCommit,
-      repository.branchs,
-      repository.tags :+ new Tag(repository.rootPath, tagName, repository.lastCommit)
-    ).save(repository.rootPath)
+    repository.lastCommit match {
+      case None => MessagePrinter.printMessage(Console.RED, "No commit")
+      case Some(value) => {
+        if (!repository.tags.map(tag => tag.name).contains(tagName)) {
+          new Tag(tagName, value.name).save(repository.rootPath)
+        } else {
+          MessagePrinter.printMessage(Console.YELLOW, s"Tag ${tagName} already exists")
+        }
+      }
+    }
   }
 
   def listTagsAndBranchs(repository: Repository): Unit = {
     MessagePrinter.printable(Console.BLUE, "Branchs :", repository.branchs)
-    MessagePrinter.printable(Console.MAGENTA_B, "Tags :", repository.tags)
+    MessagePrinter.printable(Console.YELLOW, "Tags :", repository.tags)
   }
 
   /*
@@ -198,7 +177,7 @@ object Command {
     }
   }
 
-  
+
   def merge: Unit = {}
 
   def rebase: Unit = {}

@@ -10,10 +10,9 @@ object Initialization {
   def importStage(rootPath: String): Stage = {
     val stage = FileManager.readFile(s"${rootPath}${sep}.sgit${sep}STAGE")
     if (stage == "") {
-      new Stage("", Seq())
+      new Stage(Seq())
     } else {
       new Stage(
-        DigestUtils.sha1Hex(stage),
         stage
           .split("\n")
           .map(line => {
@@ -69,15 +68,15 @@ object Initialization {
         .readFile(commitPath)
         .split("\n")
       val firstLine = commitContent.head.split(" ")
-      val commit = getCommitRec(rootPath, if (firstLine.size > 3) firstLine(3) else "")
+      val fatherCommit =
+        getCommitRec(rootPath, if (firstLine.size > 3) firstLine(3) else "")
       val blops = importBlopsFromCommit(rootPath, commitPath)
       Some(
         new Commit(
-          rootPath,
           firstLine(0),
           firstLine(1),
           firstLine(2),
-          commit,
+          fatherCommit,
           blops
         )
       )
@@ -96,11 +95,10 @@ object Initialization {
       val blops = importBlopsFromCommit(rootPath, fatherPath)
       Some(
         new Commit(
-          rootPath,
           firstLine(0),
           firstLine(1),
           firstLine(2),
-          getCommitRec(rootPath, firstLine(3)),
+          getCommitRec(rootPath, if (firstLine.size > 3) firstLine(3) else ""),
           blops
         )
       )
@@ -112,8 +110,8 @@ object Initialization {
       .listFiles(s"${rootPath}${sep}.sgit${sep}branchs")
       .map(branch => {
         val branchPath = branch.getCanonicalPath
-        val commit = createCommit(rootPath, FileManager.readFile(branchPath))
-        new Branch(rootPath, branch.getName, commit)
+        val commit = FileManager.readFile(branchPath)
+        new Branch(branch.getName, commit)
       })
   }
 
@@ -122,8 +120,8 @@ object Initialization {
       .listFiles(s"${rootPath}${sep}.sgit${sep}tags")
       .map(tag => {
         val tagPath = tag.getCanonicalPath
-        val commit = createCommit(rootPath, FileManager.readFile(tagPath))
-        new Tag(rootPath, tag.getName, commit)
+        val commit = FileManager.readFile(tagPath)
+        new Tag(tag.getName, commit)
       })
   }
 

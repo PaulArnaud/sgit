@@ -8,11 +8,20 @@ object MessagePrinter {
   def printMessage(color: String, content: String): Unit = {
     println(s"${color}${content}")
   }
-  def printSimpleMessage(color: String, label: String, content: String): Unit = {
+  def printSimpleMessage(
+      color: String,
+      label: String,
+      content: String
+  ): Unit = {
     println(s"${color}${label} ${content}")
   }
 
-  def printDiffMessage(color: String, label: String, content: Seq[String], sign: String): Unit = {
+  def printDiffMessage(
+      color: String,
+      label: String,
+      content: Seq[String],
+      sign: String
+  ): Unit = {
     if (content.size > 0) {
       println(Console.WHITE + label)
       content.foreach(s => println(s"${color} ${sign} ${s}"))
@@ -23,7 +32,10 @@ object MessagePrinter {
     commit match {
       case None => println(s"Initial Commit")
       case Some(value) => {
-        value.print
+        println("Key :" + value.name)
+        println("Message :" + value.message)
+        println("Date :" + value.date)
+        println("------------")
         log(color, value.father)
       }
     }
@@ -36,10 +48,13 @@ object MessagePrinter {
         value.father match {
           case None => println(s"Initial Commit")
           case Some(fathervalue) => {
-            val diff = Utils.getCDUM(fathervalue.blops, value.blops)
-            printable(Console.RED, "Modified Files:", diff._4)
-            printable(Console.RED, "Untracked Files:", diff._3)
+            val diff = Utils.getCDUM(value.blops, fathervalue.blops)
+            println(color + value.print)
+            printable(Console.YELLOW, "Modified Files:", diff._4)
+            printable(Console.GREEN, "Untracked Files:", diff._3)
             printable(Console.RED, "Deleted Files:", diff._2)
+            println(color + fathervalue.print)
+            logP(color, Some(fathervalue))
           }
         }
       }

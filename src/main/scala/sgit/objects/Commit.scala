@@ -4,7 +4,6 @@ import sgit._
 import sgit.sgitTrait._
 
 case class Commit(
-    rootPath: String,
     name: String,
     message: String,
     date: String,
