@@ -14,4 +14,4 @@ Available commands
 * tag
 * log
 
---help :D
+--help :D for help
