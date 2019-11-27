@@ -121,7 +121,7 @@ object Command {
 
   def log(repository: Repository, p: Boolean, stat: Boolean): Unit = {
     if (p) {
-      MessagePrinter.logP(Console.WHITE, repository.lastCommit)
+      MessagePrinter.logP(Console.WHITE, repository.lastCommit, repository.rootPath)
     } else if (stat) {
       MessagePrinter.printMessage(Console.RED, "Not implemented yet")
     } else {

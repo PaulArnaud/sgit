@@ -23,7 +23,7 @@ class Repository(
     val tags: Seq[Tag]
 ) extends Savable {
 
-  val (common, delete, untracked, modified) =
+  val (common, delete, untracked, modified, intialVersionOfModified) =
     Utils.getCDUM(workingDirectory, stage.blops)
 
   val toCommit = Utils.getFilesToCommit(lastCommit, stage)

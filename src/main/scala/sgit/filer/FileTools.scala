@@ -89,4 +89,8 @@ object FileTools {
     val (files, directorys) = elements.partition(f => f.isFile)
     files ++ directorys.flatMap(d => listFilesInDirectory(d))
   }
+
+  def getBlopContent(blop: Blop, rootPath: String): Seq[String] = {
+    FileManager.readFile(s"${rootPath}${sep}.sgit${sep}objects${sep}${blop.sha1}").split("\n")
+  }
 }

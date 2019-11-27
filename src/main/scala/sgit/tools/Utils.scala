@@ -26,7 +26,7 @@ object Utils {
   def getCDUM(
       A: Seq[Blop],
       B: Seq[Blop]
-  ): (Seq[Blop], Seq[Blop], Seq[Blop], Seq[Blop]) = {
+  ): (Seq[Blop], Seq[Blop], Seq[Blop], Seq[Blop], Seq[Blop]) = {
     /*
     Si :
     A = a, b, c, d
@@ -46,7 +46,7 @@ object Utils {
     val deleted = inBNotA.diff(modifiedInB) // b
     val untracked = inANotB.diff(modifiedInA) // f
 
-    (common, deleted, untracked, modifiedInB)
+    (common, deleted, untracked, modifiedInB, modifiedInA)
   }
 
   def getFilesToCommit(commit: Option[Commit], stage: Stage): Seq[Blop] = {

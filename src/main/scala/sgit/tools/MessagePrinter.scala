@@ -45,7 +45,7 @@ object MessagePrinter {
     }
   }
 
-  def logP(color: String, commit: Option[Commit]): Unit = {
+  def logP(color: String, commit: Option[Commit], rootPath: String): Unit = {
     commit match {
       case None => println(s"Initial Commit")
       case Some(value) => {
@@ -54,19 +54,35 @@ object MessagePrinter {
             val diff = Utils.getCDUM(value.blops, Seq())
             //println(color + value.print)
             println(value.print)
-            printable(Console.GREEN, "    New Files:", diff._3)
+            printable(Console.GREEN, "   New Files:", diff._3)
+            println(" ")
             println(s"Initial Commit")
           }
           case Some(fathervalue) => {
             val diff = Utils.getCDUM(value.blops, fathervalue.blops)
             //println(color + value.print)
             println(value.print)
-            printable(Console.YELLOW, "Modified Files:", diff._4)
-            printable(Console.GREEN, "New Files:", diff._3)
-            printable(Console.RED, "Deleted Files:", diff._2)
+            if (diff._4.size > 0) {
+              println("Diff :")
+              val length = diff._4.size
+              for ( blop <- 0 to length-1) {
+                val newBlop = FileTools.getBlopContent(diff._4(blop), rootPath)
+                val oldBlop = FileTools.getBlopContent(diff._5(blop), rootPath)
+                val lcs = LCS.lcsDP(oldBlop, newBlop)
+                val linesAdded = oldBlop.diff(lcs)
+                val linesDeleted = newBlop.diff(lcs)
+                printSimpleMessage(Console.GREEN, "   File : ", diff._4(blop).filePath)
+                printDiffMessage(Console.BLUE, "   Lines added :", linesAdded, "+")
+                printDiffMessage(Console.RED, "   Lines deleted :", linesDeleted, "-")
+              }
+            }
+            //printable(Console.YELLOW, "   Modified Files:", diff._4)
+            printable(Console.GREEN, "   New Files:", diff._3)
+            printable(Console.RED, "   Deleted Files:", diff._2)
             //println(color + fathervalue.print)
-            println(fathervalue.print)
-            logP(color, Some(fathervalue))
+            println(" ")
+            //println(fathervalue.print)
+            logP(color, Some(fathervalue), rootPath)
           }
         }
       }
