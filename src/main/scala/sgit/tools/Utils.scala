@@ -1,6 +1,9 @@
 package sgit
 
 import sgit.objects.Blop
+import sgit.objects.Stage
+import sgit.objects.Commit
+
 object Utils {
 
   def union[T](A: Seq[T], B: Seq[T]): Seq[T] = {
@@ -45,4 +48,12 @@ object Utils {
 
     (common, deleted, untracked, modifiedInB)
   }
+
+  def getFilesToCommit(commit: Option[Commit], stage: Stage): Seq[Blop] = {
+    commit match {
+      case Some(value) => difference(stage.blops, value.blops)
+      case None => stage.blops
+    }
+  }
+
 }

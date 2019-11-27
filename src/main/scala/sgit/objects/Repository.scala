@@ -26,6 +26,8 @@ class Repository(
   val (common, delete, untracked, modified) =
     Utils.getCDUM(workingDirectory, stage.blops)
 
+  val toCommit = Utils.getFilesToCommit(lastCommit, stage)
+
   def getDiff: Seq[(String, Seq[String], Seq[String])] = {
     FileTools
       .getContentFileFromBlop(rootPath, modified)

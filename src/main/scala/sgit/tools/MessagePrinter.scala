@@ -68,7 +68,7 @@ object MessagePrinter {
   ): Unit = {
     if (list.size > 0) {
       println(Console.WHITE + label)
-      list.foreach(e => println(s"${color}   ${e.print}"))
+      list.foreach(e => println(s"${color}   ${e.printFile}"))
     }
   }
 

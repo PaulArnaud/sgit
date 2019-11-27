@@ -11,6 +11,10 @@ case class Branch(name: String, commit: String)
     s"${name}"
   }
 
+  def printFile: String = {
+    name
+  }
+
   def save(rootPath: String): Unit = {
     Saver.saveBranch(rootPath, name, commit)
   }

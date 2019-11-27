@@ -49,19 +49,20 @@ object Sgit {
           .text("Record changes to the repository")
           .action((_, c) => c.copy(command = "commit"))
           .children(
-            arg[String]("name")
-              .required()
-              .action((x, c) => c.copy(branch_tag_commit = x))
-              .text("name of the commit")
+            opt[String]('m', "message")
+            .optional()
+            .text("Message of the commit")
+            .action((message, c) => c.copy(branch_tag_commit = message)),
           ),
         // Log option
         cmd("log")
           .text("Show commit logs")
           .action((_, c) => c.copy(command = "log"))
           .children(
-            opt[Unit]("p")
-              .text("Show changes overtime")
-              .action((_, c) => c.copy(p = true)),
+            opt[Unit]('p', "patch")
+            .optional()
+            .text("Show changes overtime")
+            .action((_, c) => c.copy(p = true)),
             opt[Unit]("stat")
               .text(
                 "show the stats of insertion and deletion of each commited file"

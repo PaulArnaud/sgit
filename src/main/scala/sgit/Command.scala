@@ -4,11 +4,14 @@ import sgit.objects._
 import sgit.filer._
 import java.time.LocalDate
 import org.apache.commons.codec.digest.DigestUtils
+import java.io.File
 
 object Command {
 
   def init: Unit = {
     FileTools.createRepo
+    val path = new File(".").getCanonicalPath
+    MessagePrinter.printMessage(Console.WHITE, s"Initialized empty Git repository in ${path}")
   }
 
   def status(repository: Repository): Unit = {
@@ -22,6 +25,18 @@ object Command {
     _ Pour trouver les fichiers modifiés, il faut regarder les blops commun entre supprimés et non trackés
     selon le critère path
      */
+
+    MessagePrinter.printMessage(Console.WHITE, s"On branch : ${repository.head}") 
+    if (repository.toCommit.length ==0 ) {
+      MessagePrinter.printMessage(Console.WHITE, "Nothing to commit")
+    } else {
+      MessagePrinter.printable(
+        Console.BLUE,
+        "Files to be commited:",
+        repository.toCommit
+      )
+    }
+
     MessagePrinter.printable(
       Console.YELLOW,
       "Modified Files:",
@@ -106,7 +121,7 @@ object Command {
 
   def log(repository: Repository, p: Boolean, stat: Boolean): Unit = {
     if (p) {
-      MessagePrinter.logP(Console.YELLOW, repository.lastCommit)
+      MessagePrinter.logP(Console.WHITE, repository.lastCommit)
     } else if (stat) {
       MessagePrinter.printMessage(Console.RED, "Not implemented yet")
     } else {

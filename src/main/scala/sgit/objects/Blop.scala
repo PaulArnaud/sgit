@@ -12,4 +12,8 @@ case class Blop(sha1: String, filePath: String) extends Savable with Printable {
   def print: String = {
     s"${sha1} ${filePath}"
   }
+
+  def printFile: String = {
+    filePath
+  }
 }

@@ -10,6 +10,10 @@ case class Tag(name: String, commit: String)
   def print: String = {
     s"${name}"
   }
+  
+  def printFile: String = {
+    name
+  }
 
   def save(rootPath: String): Unit = {
     Saver.saveTag(rootPath, name, commit)

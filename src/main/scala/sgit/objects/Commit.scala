@@ -15,6 +15,11 @@ case class Commit(
   def print: String = {
     s"${name} ${message} ${date}"
   }
+
+  def printFile: String = {
+    name
+  }
+
   def save(rootPath: String): Unit = {
     Saver.saveCommit(rootPath, name, message, date, father, blops)
   }
