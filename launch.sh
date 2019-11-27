@@ -43,3 +43,4 @@ echo "================ COMMAND : sgit log ================"
 sgit log
 echo "================ COMMAND : sgit log -p ================"
 sgit log -p
+cd ..
