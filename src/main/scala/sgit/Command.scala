@@ -121,11 +121,55 @@ object Command {
 
   def log(repository: Repository, p: Boolean, stat: Boolean): Unit = {
     if (p) {
-      MessagePrinter.logP(Console.WHITE, repository.lastCommit, repository.rootPath)
+      logP(repository.lastCommit, repository.rootPath)
     } else if (stat) {
       MessagePrinter.printMessage(Console.RED, "Not implemented yet")
     } else {
       MessagePrinter.log(Console.YELLOW, repository.lastCommit)
+    }
+  }
+
+  def logP(commit: Option[Commit], rootPath: String): Unit = {
+    commit match {
+      case None => MessagePrinter.printMessage(Console.WHITE, s"Initial Commit")
+      case Some(value) => {
+        value.father match {
+          case None => {
+            val diff = Utils.getCDUM(value.blops, Seq())
+            //println(color + value.print)
+            MessagePrinter.printMessage(Console.WHITE, value.print)
+            MessagePrinter.printable(Console.GREEN,  "   New Files:", diff._3)
+            MessagePrinter.printMessage(Console.WHITE, " ")
+            MessagePrinter.printMessage(Console.WHITE, s"Initial Commit")
+          }
+          case Some(fathervalue) => {
+            val diff = Utils.getCDUM(value.blops, fathervalue.blops)
+            //println(color + value.print)
+            MessagePrinter.printMessage(Console.WHITE, value.print)
+            if (diff._4.size > 0) {
+              MessagePrinter.printMessage(Console.WHITE, "   Diff :")
+              val length = diff._4.size
+              for ( blop <- 0 to length-1) {
+                val newBlop = FileTools.getBlopContent(diff._4(blop), rootPath)
+                val oldBlop = FileTools.getBlopContent(diff._5(blop), rootPath)
+                val lcs = LCS.lcsDP(oldBlop, newBlop)
+                val linesAdded = oldBlop.diff(lcs)
+                val linesDeleted = newBlop.diff(lcs)
+                MessagePrinter.printSimpleMessage(Console.GREEN, "      File : ", diff._4(blop).filePath)
+                MessagePrinter.printDiffMessage(Console.BLUE, "      Lines added :", linesAdded, "+")
+                MessagePrinter.printDiffMessage(Console.RED, "      Lines deleted :", linesDeleted, "-")
+              }
+            }
+            //printable(Console.YELLOW, "   Modified Files:", diff._4)
+            MessagePrinter.printable(Console.GREEN, "   New Files:", diff._3)
+            MessagePrinter.printable(Console.RED, "   Deleted Files:", diff._2)
+            //println(color + fathervalue.print)
+            MessagePrinter.printMessage(Console.WHITE, " ")
+            //println(fathervalue.print)
+            logP(Some(fathervalue), rootPath)
+          }
+        }
+      }
     }
   }
 
