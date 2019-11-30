@@ -28,7 +28,7 @@ object MessagePrinter {
       //println(Console.WHITE + label)
       println(label)
       //content.foreach(s => println(s"${color} ${sign} ${s}"))
-      content.foreach(s => println(s" ${sign} ${s}"))
+      content.foreach(s => println(s"    ${sign} ${s}"))
     }
   }
 

@@ -11,7 +11,7 @@ object Command {
   def init: Unit = {
     FileTools.createRepo
     val path = new File(".").getCanonicalPath
-    MessagePrinter.printMessage(Console.WHITE, s"Initialized empty Git repository in ${path}")
+    MessagePrinter.printMessage(Console.WHITE, s"Initialized empty Sgit repository in ${path}")
   }
 
   def status(repository: Repository): Unit = {
@@ -55,9 +55,9 @@ object Command {
       repository.getDiff.foreach(d => {
         MessagePrinter.printSimpleMessage(Console.GREEN, "File : ", d._1)
         MessagePrinter
-          .printDiffMessage(Console.BLUE, "Lines added :", d._2, "+")
+          .printDiffMessage(Console.BLUE, "   Lines added :", d._2, "+")
         MessagePrinter
-          .printDiffMessage(Console.RED, "Lines deleted :", d._3, "-")
+          .printDiffMessage(Console.RED, "   Lines deleted :", d._3, "-")
       })
     }
   }
